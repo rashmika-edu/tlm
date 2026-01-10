@@ -83,6 +83,61 @@
             document.getElementById('reg-box').className = (r === 'teacher' ? 'text-center mt-6 text-xs text-slate-400 font-medium' : 'hidden');
         }
 
+        // --- FIXED REGISTRATION LOGIC ---
+async function handleRegister(e) {
+    e.preventDefault();
+    setLoading(true);
+
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPass').value;
+    const fullName = document.getElementById('regName').value;
+    const schoolCode = document.getElementById('regCode').value;
+
+    // 1. Create the Auth Account
+    const { data: authData, error: authError } = await _db.auth.signUp({
+        email: email,
+        password: password
+    });
+
+    if (authError) {
+        alert("Registration Error: " + authError.message);
+        setLoading(false);
+        return;
+    }
+
+    // 2. Link the new Auth ID to a 'Teacher' Profile
+    // This step was likely failing because the profile wasn't being created
+    const { error: profileError } = await _db.from('profiles').insert([{
+        id: authData.user.id,
+        full_name: fullName,
+        role: 'teacher', // Strictly locked to teacher
+        school_code: schoolCode
+    }]);
+
+    if (profileError) {
+        console.error("Profile Error:", profileError);
+        alert("Account created, but database profile failed. Please contact Admin.");
+    } else {
+        alert("Registration Successful! You can now log in.");
+        toggleReg(false); // Close registration modal
+    }
+    
+    setLoading(false);
+}
+
+// --- UPDATED UI TOGGLE ---
+function toggleReg(show) {
+    const modal = document.getElementById('modal-reg');
+    const authBox = document.getElementById('auth-ui');
+    
+    if (show) {
+        modal.classList.remove('hidden');
+        authBox.classList.add('blur-md'); // Visual feedback
+    } else {
+        modal.classList.add('hidden');
+        authBox.classList.remove('blur-md');
+    }
+}
         async function handleLogin(e) {
             e.preventDefault();
             setLoading(true);
@@ -139,3 +194,4 @@
     </script>
 </body>
 </html>
+
