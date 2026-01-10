@@ -10,49 +10,41 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow: hidden; height: 100vh; }
-        .glass-card { background: white; border: 1px solid #e2e8f0; border-radius: 1.5rem; transition: all 0.2s; }
+        .glass-card { background: white; border: 1px solid #e2e8f0; border-radius: 1.5rem; }
         .nav-active { background-color: #2563eb !important; color: white !important; }
         .status-pill-pending { background-color: #fef3c7; color: #92400e; }
         .status-pill-approved { background-color: #dcfce7; color: #166534; }
-        .status-pill-rejected { background-color: #fee2e2; color: #991b1b; }
         .hidden { display: none !important; }
         .loader { border-top-color: #2563eb; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* Custom scrollbar for better look */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="flex">
 
     <div id="loader" class="hidden fixed inset-0 z-[100] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center">
         <div class="loader w-12 h-12 border-4 border-slate-200 rounded-full mb-4"></div>
-        <p class="text-blue-600 font-bold">Processing...</p>
+        <p class="text-blue-600 font-bold">Syncing Cloud Data...</p>
     </div>
 
     <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl">
             <div id="login-box">
                 <div class="text-center mb-8">
-                    <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
-                        <i data-lucide="shield-check" class="text-white w-8 h-8"></i>
-                    </div>
                     <h2 class="text-2xl font-bold text-slate-800">LankaTeacher Pro</h2>
-                    <p class="text-slate-500">Cloud Management Portal</p>
+                    <p class="text-slate-500">Sign in to manage your school</p>
                 </div>
                 <form id="loginForm" class="space-y-4">
                     <input type="email" id="email" required placeholder="Email Address" class="w-full p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
                     <input type="password" id="password" required placeholder="Password" class="w-full p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
-                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all">Login</button>
-                    <button type="button" onclick="toggleAuth('reg')" class="w-full text-blue-600 font-semibold mt-4">Create Account</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">Login</button>
+                    <button type="button" onclick="toggleAuth('reg')" class="w-full text-blue-600 font-semibold mt-4">New? Register Here</button>
                 </form>
             </div>
-
             <div id="register-box" class="hidden">
-                <h2 class="text-2xl font-bold mb-6 text-center">Registration</h2>
+                 <h2 class="text-2xl font-bold mb-6 text-center">Registration</h2>
                 <form id="regForm" class="space-y-3">
                     <div class="flex bg-slate-100 p-1 rounded-2xl mb-4">
-                        <button type="button" onclick="setRole('teacher')" id="btn-t" class="flex-1 py-2 rounded-xl font-bold text-sm bg-white shadow-sm">Teacher</button>
+                        <button type="button" onclick="setRole('teacher')" id="btn-t" class="flex-1 py-2 rounded-xl font-bold text-sm bg-white">Teacher</button>
                         <button type="button" onclick="setRole('principal')" id="btn-p" class="flex-1 py-2 rounded-xl font-bold text-sm text-slate-500">Principal</button>
                     </div>
                     <input type="text" id="regName" required placeholder="Full Name" class="w-full p-4 border rounded-2xl outline-none">
@@ -81,120 +73,135 @@
         </div>
 
         <div class="mt-auto pt-6 border-t border-slate-800">
-            <div class="mb-6 px-2">
-                <p id="u-name" class="font-bold text-sm truncate text-blue-400">User</p>
+            <div class="mb-4 px-2">
+                <p id="u-name" class="font-bold text-sm text-blue-400 truncate">User</p>
                 <p id="u-school" class="text-[10px] text-slate-500 uppercase font-bold truncate">School</p>
             </div>
-            <button onclick="logout()" class="w-full flex items-center gap-3 p-4 rounded-2xl text-rose-400 hover:bg-rose-500/10 mb-6"><i data-lucide="log-out"></i>Logout</button>
-            
-            <div class="text-center px-2">
-                <p class="text-[10px] text-slate-600 font-medium">© 2026 by K.A.V.Rashmika</p>
-                <p class="text-[9px] text-slate-700 mt-1 uppercase tracking-tighter">All Rights Reserved</p>
+            <button onclick="logout()" class="w-full flex items-center gap-3 p-4 rounded-2xl text-rose-400 hover:bg-rose-500/10 mb-4"><i data-lucide="log-out"></i>Logout</button>
+            <div class="text-center">
+                <p class="text-[10px] text-slate-600">© 2026 by K.A.V.Rashmika</p>
             </div>
         </div>
     </nav>
 
-    <main id="main-ui" class="hidden flex-1 p-10 overflow-y-auto bg-[#f8fafc]">
+    <main id="main-ui" class="hidden flex-1 p-10 overflow-y-auto">
         
         <div id="tab-dash" class="tab-content space-y-8">
             <div class="flex justify-between items-center">
-                <h1 class="text-3xl font-bold text-slate-800">School Dashboard</h1>
-                <button onclick="downloadReport()" class="principal-only hidden bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-emerald-700">
-                    <i data-lucide="download" class="w-4 h-4"></i> Download CSV
-                </button>
+                <h1 class="text-3xl font-bold text-slate-800">Overview</h1>
+                <button onclick="downloadReport()" class="principal-only hidden bg-emerald-600 text-white px-5 py-2 rounded-xl font-bold">Download CSV</button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-card p-6">
-                    <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total Staff</p>
-                    <h3 class="text-3xl font-bold text-slate-800" id="stat-staff">0</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-card p-8 border-b-4 border-blue-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total School Staff</p>
+                    <h3 class="text-4xl font-bold text-slate-800" id="stat-staff">--</h3>
                 </div>
-                <div class="glass-card p-6 border-l-4 border-amber-400">
+                <div class="glass-card p-8 border-b-4 border-amber-500">
                     <p class="text-xs font-bold text-slate-400 uppercase mb-2">Pending Requests</p>
-                    <h3 class="text-3xl font-bold text-slate-800" id="stat-pending">0</h3>
+                    <h3 class="text-4xl font-bold text-slate-800" id="stat-pending">--</h3>
                 </div>
             </div>
 
             <div class="glass-card overflow-hidden">
-                <div class="p-6 border-b"><h2 class="font-bold text-slate-800">Leave Logs</h2></div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-50 border-b">
-                            <tr class="text-[11px] text-slate-400 font-bold uppercase">
-                                <th class="p-4">Staff</th>
-                                <th class="p-4">Type</th>
-                                <th class="p-4">Date</th>
-                                <th class="p-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dash-table-body"></tbody>
-                    </table>
-                </div>
+                <div class="p-6 border-b"><h2 class="font-bold">Recent History</h2></div>
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50"><tr class="text-[11px] text-slate-400 uppercase"><th class="p-4">Staff</th><th class="p-4">Type</th><th class="p-4">Status</th></tr></thead>
+                    <tbody id="dash-table-body"></tbody>
+                </table>
             </div>
         </div>
 
         <div id="tab-management" class="tab-content hidden space-y-6">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                <h1 class="text-2xl font-bold text-slate-800">Staff Management</h1>
-                <div class="relative w-full md:w-80">
-                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                    <input type="text" id="staffSearch" onkeyup="filterStaff()" placeholder="Search teachers..." class="w-full pl-11 p-3 border rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
-            </div>
+            <h1 class="text-2xl font-bold">Staff Directory</h1>
             <div class="glass-card overflow-hidden">
                 <table class="w-full text-left">
-                    <thead class="bg-slate-50 border-b"><tr class="text-[11px] text-slate-400 font-bold uppercase"><th class="p-4">Name</th><th class="p-4">Role</th><th class="p-4">Joined</th></tr></thead>
+                    <thead class="bg-slate-50"><tr class="p-4"><th>Name</th><th>Role</th></tr></thead>
                     <tbody id="staff-table-body"></tbody>
                 </table>
             </div>
         </div>
 
-        <div id="tab-approvals" class="tab-content hidden space-y-6"><h1 class="text-2xl font-bold text-slate-800">Pending Approvals</h1><div id="approval-queue" class="grid gap-4"></div></div>
+        <div id="tab-approvals" class="tab-content hidden space-y-4">
+             <h1 class="text-2xl font-bold">Pending Approvals</h1>
+             <div id="approval-queue" class="space-y-4"></div>
+        </div>
 
-        <div id="tab-apply" class="tab-content hidden max-w-xl mx-auto">
-            <div class="glass-card p-10 border-t-8 border-blue-600 shadow-xl shadow-blue-50">
-                <h2 class="text-2xl font-bold mb-6">New Application</h2>
+        <div id="tab-apply" class="tab-content hidden max-w-lg mx-auto">
+            <div class="glass-card p-10 border-t-8 border-blue-600">
+                <h2 class="text-xl font-bold mb-6">Request Leave</h2>
                 <form id="leaveForm" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase">Start Date</label><input type="date" id="lvDate" required class="w-full p-4 border rounded-2xl bg-slate-50"></div>
-                        <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase">Days</label><input type="number" id="lvDays" value="1" min="1" required class="w-full p-4 border rounded-2xl bg-slate-50"></div>
-                    </div>
-                    <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase">Leave Type</label><select id="lvType" class="w-full p-4 border rounded-2xl bg-slate-50"><option>Casual</option><option>Medical</option><option>Duty</option></select></div>
-                    <div class="space-y-1"><label class="text-xs font-bold text-slate-400 uppercase">Reason</label><textarea id="lvReason" placeholder="Briefly explain your leave..." class="w-full p-4 border rounded-2xl h-24 bg-slate-50"></textarea></div>
-                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-200 hover:scale-[1.01] active:scale-[0.99] transition-transform">Submit to Principal</button>
+                    <input type="date" id="lvDate" required class="w-full p-4 border rounded-2xl bg-slate-50">
+                    <input type="number" id="lvDays" value="1" min="1" class="w-full p-4 border rounded-2xl bg-slate-50">
+                    <select id="lvType" class="w-full p-4 border rounded-2xl bg-slate-50"><option>Casual</option><option>Medical</option></select>
+                    <textarea id="lvReason" placeholder="Reason..." class="w-full p-4 border rounded-2xl h-24 bg-slate-50"></textarea>
+                    <button class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">Submit</button>
                 </form>
             </div>
         </div>
     </main>
 
     <script>
-        // --- DB SETUP ---
         const SUPABASE_URL = "https://wlzzepbqdeotluxkrthd.supabase.co"; 
         const SUPABASE_KEY = "sb_publishable_61_5jXI4eiFLGbS6MXLPRA_lNFgmCbt"; 
         const _db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let activeProfile = null;
-        let allStaffList = [];
-        let allLeaves = [];
 
-        // --- AUTH ---
-        async function logout() { 
-            setLoading(true); 
-            await _db.auth.signOut(); 
-            window.location.replace(window.location.origin + window.location.pathname); 
+        // --- CORE FIX: Wait for all data before rendering ---
+        async function refreshData() {
+            setLoading(true);
+            try {
+                // Fetch Staff and Leaves simultaneously
+                const [staffRes, leavesRes] = await Promise.all([
+                    _db.from('profiles').select('*').eq('school_code', activeProfile.school_code),
+                    _db.from('leaves').select('*').eq('school_code', activeProfile.school_code).order('created_at', { ascending: false })
+                ]);
+
+                if (staffRes.error) throw staffRes.error;
+                if (leavesRes.error) throw leavesRes.error;
+
+                const staff = staffRes.data;
+                const leaves = leavesRes.data;
+
+                // 1. Update Counts
+                document.getElementById('stat-staff').innerText = staff.length;
+                const pending = leaves.filter(l => l.status === 'Pending');
+                document.getElementById('stat-pending').innerText = pending.length;
+
+                // 2. Render Dash Table
+                const displayLeaves = activeProfile.role === 'teacher' ? leaves.filter(l => l.user_id === activeProfile.id) : leaves;
+                document.getElementById('dash-table-body').innerHTML = displayLeaves.map(l => `
+                    <tr class="border-b text-sm">
+                        <td class="p-4 font-medium">${l.user_name}</td>
+                        <td class="p-4">${l.type}</td>
+                        <td class="p-4"><span class="px-2 py-1 rounded-full text-[10px] font-bold status-pill-${l.status.toLowerCase()}">${l.status}</span></td>
+                    </tr>`).join('');
+
+                // 3. Render Staff Table
+                document.getElementById('staff-table-body').innerHTML = staff.map(s => `
+                    <tr class="border-b"><td class="p-4 font-bold">${s.full_name}</td><td class="p-4 uppercase text-xs">${s.role}</td></tr>`).join('');
+
+                // 4. Render Approvals
+                if(activeProfile.role === 'principal') {
+                    document.getElementById('approval-queue').innerHTML = pending.map(l => `
+                    <div class="glass-card p-6 flex justify-between items-center border">
+                        <div><p class="font-bold">${l.user_name}</p><p class="text-xs text-slate-500">${l.type} | ${l.start_date}</p></div>
+                        <div class="flex gap-2">
+                            <button onclick="updStatus('${l.id}', 'Approved')" class="p-2 bg-emerald-500 text-white rounded-lg"><i data-lucide="check"></i></button>
+                            <button onclick="updStatus('${l.id}', 'Rejected')" class="p-2 bg-rose-500 text-white rounded-lg"><i data-lucide="x"></i></button>
+                        </div>
+                    </div>`).join('');
+                }
+                lucide.createIcons();
+            } catch (err) {
+                console.error("Dashboard Error:", err);
+            } finally {
+                setLoading(false);
+            }
         }
 
-        function toggleAuth(t) { document.getElementById('login-box').classList.toggle('hidden', t === 'reg'); document.getElementById('register-box').classList.toggle('hidden', t === 'login'); }
-        
-        function setRole(r) { 
-            window.selectedRole = r;
-            document.getElementById('btn-t').className = r === 'teacher' ? 'flex-1 py-2 rounded-xl font-bold text-sm bg-white shadow-sm' : 'flex-1 py-2 rounded-xl font-bold text-sm text-slate-500';
-            document.getElementById('btn-p').className = r === 'principal' ? 'flex-1 py-2 rounded-xl font-bold text-sm bg-white shadow-sm' : 'flex-1 py-2 rounded-xl font-bold text-sm text-slate-500';
-            document.getElementById('sc-input').classList.toggle('hidden', r === 'principal');
-            document.getElementById('sn-input').classList.toggle('hidden', r === 'teacher');
-        }
-
-        // --- DATA ENGINE ---
+        // --- LOGIN/SESSION ---
         async function checkSession() {
             const { data: { session } } = await _db.auth.getSession();
             if (session) {
@@ -210,98 +217,33 @@
             document.getElementById('main-ui').classList.remove('hidden');
             document.getElementById('u-name').innerText = activeProfile.full_name;
             document.getElementById('u-school').innerText = activeProfile.school_name;
-            if(activeProfile.role === 'principal') { 
-                document.querySelectorAll('.principal-only').forEach(e => e.classList.remove('hidden')); 
-                document.querySelectorAll('.teacher-only').forEach(e => e.classList.add('hidden')); 
+            if(activeProfile.role === 'principal') {
+                document.querySelectorAll('.principal-only').forEach(e => e.classList.remove('hidden'));
+                document.querySelectorAll('.teacher-only').forEach(e => e.classList.add('hidden'));
             }
             refreshData();
         }
 
-        async function refreshData() {
-            const { data: staff } = await _db.from('profiles').select('*').eq('school_code', activeProfile.school_code);
-            allStaffList = staff;
-            document.getElementById('stat-staff').innerText = staff.length;
-            renderStaffTable(staff);
-
-            const { data: leaves } = await _db.from('leaves').select('*').eq('school_code', activeProfile.school_code).order('created_at', { ascending: false });
-            allLeaves = leaves || [];
-
-            const filteredLeaves = activeProfile.role === 'teacher' ? allLeaves.filter(l => l.user_id === activeProfile.id) : allLeaves;
-            document.getElementById('dash-table-body').innerHTML = filteredLeaves.map(l => `
-                <tr class="border-b text-sm">
-                    <td class="p-4 font-medium">${l.user_name}</td>
-                    <td class="p-4">${l.type}</td>
-                    <td class="p-4 text-slate-500">${l.start_date}</td>
-                    <td class="p-4"><span class="px-2 py-1 rounded-full text-[10px] font-bold status-pill-${l.status.toLowerCase()}">${l.status}</span></td>
-                </tr>`).join('');
-
-            const pending = allLeaves.filter(l => l.status === 'Pending');
-            document.getElementById('stat-pending').innerText = pending.length;
-            if(activeProfile.role === 'principal') {
-                document.getElementById('approval-queue').innerHTML = pending.map(l => `
-                <div class="glass-card p-6 flex justify-between items-center">
-                    <div><p class="font-bold">${l.user_name}</p><p class="text-xs text-slate-500">${l.type} | ${l.start_date} (${l.duration}d)</p></div>
-                    <div class="flex gap-2">
-                        <button onclick="updStatus('${l.id}', 'Approved')" class="p-3 bg-emerald-500 text-white rounded-xl"><i data-lucide="check"></i></button>
-                        <button onclick="updStatus('${l.id}', 'Rejected')" class="p-3 bg-rose-500 text-white rounded-xl"><i data-lucide="x"></i></button>
-                    </div>
-                </div>`).join('');
-            }
+        // --- ACTIONS ---
+        async function updStatus(id, s) { await _db.from('leaves').update({ status: s }).eq('id', id); refreshData(); }
+        async function logout() { await _db.auth.signOut(); location.reload(); }
+        
+        function showTab(t) {
+            document.querySelectorAll('.tab-content').forEach(e => e.classList.add('hidden'));
+            document.getElementById('tab-'+t).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
+            document.getElementById('nav-'+(t==='management'?'manage':t)).classList.add('nav-active');
             lucide.createIcons();
         }
 
-        // --- CSV EXPORT ---
-        function downloadReport() {
-            if (allLeaves.length === 0) return alert("No history found to download.");
-            const headers = ["Staff", "Leave Type", "Start Date", "Days", "Status", "Reason"];
-            const rows = allLeaves.map(l => [l.user_name, l.type, l.start_date, l.duration, l.status, l.reason.replace(/,/g, " ")]);
-            const csvData = [headers, ...rows].map(e => e.join(",")).join("\n");
-            const blob = new Blob([csvData], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('hidden', '');
-            a.setAttribute('href', url);
-            a.setAttribute('download', `LankaTeacher_Report_${activeProfile.school_code}.csv`);
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        // --- SUBMIT LEAVE ---
-        document.getElementById('leaveForm').onsubmit = async (e) => {
-            e.preventDefault();
-            setLoading(true);
-            const { error } = await _db.from('leaves').insert([{
-                user_id: activeProfile.id,
-                user_name: activeProfile.full_name,
-                school_code: activeProfile.school_code,
-                type: document.getElementById('lvType').value,
-                start_date: document.getElementById('lvDate').value,
-                duration: parseInt(document.getElementById('lvDays').value),
-                reason: document.getElementById('lvReason').value || "No reason"
-            }]);
-            if(error) alert("Submit Error: " + error.message);
-            else { alert("Application Sent!"); e.target.reset(); showTab('dash'); refreshData(); }
-            setLoading(false);
-        };
-
-        // --- HELPERS ---
-        function filterStaff() { const t = document.getElementById('staffSearch').value.toLowerCase(); renderStaffTable(allStaffList.filter(s => s.full_name.toLowerCase().includes(t))); }
-        function renderStaffTable(d) { document.getElementById('staff-table-body').innerHTML = d.map(s => `<tr class="border-b text-sm"><td class="p-4 font-bold">${s.full_name}</td><td class="p-4 uppercase text-xs text-slate-400 font-bold">${s.role}</td><td class="p-4 text-slate-400">Active</td></tr>`).join(''); }
-        async function updStatus(id, s) { setLoading(true); await _db.from('leaves').update({ status: s }).eq('id', id); refreshData(); setLoading(false); }
-        function showTab(t) { document.querySelectorAll('.tab-content').forEach(e => e.classList.add('hidden')); document.getElementById('tab-'+t).classList.remove('hidden'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active', 'text-white')); document.getElementById('nav-'+(t==='management'?'manage':t)).classList.add('nav-active', 'text-white'); lucide.createIcons(); }
         function setLoading(s) { document.getElementById('loader').classList.toggle('hidden', !s); }
-        
-        document.getElementById('loginForm').onsubmit = async (e) => { e.preventDefault(); setLoading(true); const { error } = await _db.auth.signInWithPassword({ email: document.getElementById('email').value, password: document.getElementById('password').value }); if(error) alert(error.message); else checkSession(); setLoading(false); };
-        document.getElementById('regForm').onsubmit = async (e) => {
-            e.preventDefault(); setLoading(true);
-            const email = document.getElementById('regEmail').value;
-            const pass = document.getElementById('regPass').value;
-            const code = window.selectedRole === 'principal' ? 'SL-' + Math.floor(1000 + Math.random()*9000) : document.getElementById('regSC').value;
-            const { data, error } = await _db.auth.signUp({ email, password: pass });
-            if(error) alert(error.message);
-            else { await _db.from('profiles').insert([{ id: data.user.id, full_name: document.getElementById('regName').value, role: window.selectedRole, school_name: document.getElementById('regSN').value || 'Staff', school_code: code }]); alert("Success! Code: " + code); location.reload(); }
-            setLoading(false);
+        function toggleAuth(t) { document.getElementById('login-box').classList.toggle('hidden', t === 'reg'); document.getElementById('register-box').classList.toggle('hidden', t === 'login'); }
+        function setRole(r) { window.selectedRole = r; }
+
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const { error } = await _db.auth.signInWithPassword({ email: document.getElementById('email').value, password: document.getElementById('password').value });
+            if(error) alert(error.message); else checkSession();
         };
 
         window.onload = () => { setRole('teacher'); checkSession(); lucide.createIcons(); };
