@@ -135,27 +135,47 @@
             document.getElementById('reg-link').classList.toggle('hide', role !== 'teacher');
         }
 
-        document.getElementById('loginForm').onsubmit = async (e) => {
-            e.preventDefault();
-            setLoading(true);
-            const { data, error } = await _db.auth.signInWithPassword({
-                email: e.target.email.value,
-                password: e.target.password.value
-            });
+document.getElementById('loginForm').onsubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-            if(error) { alert(error.message); setLoading(false); return; }
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
 
-            const { data: profile } = await _db.from('profiles').select('*').eq('id', data.user.id).single();
-            
-            if(!profile || profile.role !== activeRole) {
-                alert(`Access denied. This account is registered as: ${profile ? profile.role : 'unknown'}`);
-                await _db.auth.signOut();
-                setLoading(false);
-            } else {
-                currentUser = profile;
-                renderApp();
-            }
-        };
+    // 1. Authenticate with Supabase
+    const { data: authData, error: authError } = await _db.auth.signInWithPassword({ email, password });
+
+    if (authError) {
+        alert("Authentication Error: " + authError.message);
+        setLoading(false);
+        return;
+    }
+
+    // 2. Fetch the Profile
+    const { data: profile, error: profileError } = await _db.from('profiles')
+        .select('*')
+        .eq('id', authData.user.id)
+        .single();
+
+    // 3. Detailed Error Handling
+    if (profileError || !profile) {
+        alert("Database Error: No Profile found for this account. Please run the SQL Reset Script to create your Admin profile.");
+        console.error("Missing Profile for UUID:", authData.user.id);
+        await _db.auth.signOut();
+        setLoading(false);
+        return;
+    }
+
+    // 4. Role Authorization
+    if (profile.role !== activeRole) {
+        alert(`Role Mismatch: You are trying to log in as ${activeRole}, but your account is registered as ${profile.role}.`);
+        await _db.auth.signOut();
+        setLoading(false);
+    } else {
+        currentUser = profile;
+        renderApp();
+    }
+};
 
         // 2. APP RENDERING
         async function renderApp() {
@@ -262,3 +282,4 @@
     </script>
 </body>
 </html>
+
