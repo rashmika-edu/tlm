@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LankaTeacher Cloud | Live Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; height: 100vh; overflow: hidden; }
+        .glass-card { background: white; border: 1px solid #e2e8f0; border-radius: 1.5rem; }
+        .status-pill-pending { background-color: #fef3c7; color: #92400e; }
+        .status-pill-approved { background-color: #dcfce7; color: #166534; }
+        .hidden { display: none !important; }
+        .loader { border-top-color: #2563eb; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="flex">
+
+    <div id="loader" class="hidden fixed inset-0 z-[100] bg-white/80 backdrop-blur-sm flex items-center justify-center">
+        <div class="loader w-12 h-12 border-4 border-slate-200 rounded-full"></div>
+    </div>
+
+    <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md p-8 rounded-[2rem] shadow-2xl">
+            <div id="login-box">
+                <div class="text-center mb-8">
+                    <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="cloud-lightning" class="text-white w-8 h-8"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold">Cloud Login</h2>
+                    <p class="text-slate-500">Access your school data from anywhere</p>
+                </div>
+                <form id="loginForm" class="space-y-4">
+                    <input type="email" id="email" required placeholder="Email" class="w-full p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="password" id="password" required placeholder="Password" class="w-full p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
+                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-200">Sign In</button>
+                    <button type="button" onclick="toggleAuth('reg')" class="w-full text-blue-600 text-sm font-semibold mt-4">Create New Account</button>
+                </form>
+            </div>
+
+            <div id="register-box" class="hidden">
+                <h2 class="text-2xl font-bold mb-6 text-center">Join Portal</h2>
+                <form id="regForm" class="space-y-3">
+                    <div class="flex bg-slate-100 p-1 rounded-xl mb-4">
+                        <button type="button" onclick="setRole('teacher')" id="r-t" class="flex-1 py-2 rounded-lg font-bold text-sm bg-white shadow-sm">Teacher</button>
+                        <button type="button" onclick="setRole('principal')" id="r-p" class="flex-1 py-2 rounded-lg font-bold text-sm text-slate-500">Principal</button>
+                    </div>
+                    <input type="text" id="regName" required placeholder="Full Name" class="w-full p-3 border rounded-xl outline-none">
+                    <input type="email" id="regEmail" required placeholder="Email" class="w-full p-3 border rounded-xl outline-none">
+                    <input type="password" id="regPass" required placeholder="Password" class="w-full p-3 border rounded-xl outline-none">
+                    <div id="sc-box">
+                        <input type="text" id="regSC" placeholder="School Code" class="w-full p-3 border rounded-xl bg-blue-50 outline-none">
+                    </div>
+                    <div id="sn-box" class="hidden">
+                        <input type="text" id="regSN" placeholder="School Name (e.g. Ananda College)" class="w-full p-3 border rounded-xl bg-emerald-50 outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold mt-2">Register</button>
+                    <button type="button" onclick="toggleAuth('login')" class="w-full text-slate-500 text-sm mt-2">Back to Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <nav id="sidebar" class="hidden w-64 bg-slate-900 text-white flex flex-col p-6 h-full">
+        <div class="flex items-center space-x-3 mb-10"><i data-lucide="graduation-cap" class="text-blue-500"></i><span class="font-bold">LANKATEACHER</span></div>
+        <div class="flex-1 space-y-2">
+            <button onclick="showTab('dash')" class="nav-link w-full flex items-center space-x-3 p-3 rounded-xl bg-blue-600 text-white"><i data-lucide="layout"></i><span>Dashboard</span></button>
+            <button id="t-btn" onclick="showTab('apply')" class="nav-link w-full flex items-center space-x-3 p-3 rounded-xl text-slate-400"><i data-lucide="send"></i><span>Apply Leave</span></button>
+            <button id="p-btn" onclick="showTab('approvals')" class="hidden nav-link w-full flex items-center space-x-3 p-3 rounded-xl text-slate-400"><i data-lucide="check-circle"></i><span>Approvals</span></button>
+        </div>
+        <div class="pt-6 border-t border-slate-800">
+            <p id="u-name" class="font-bold text-sm truncate"></p>
+            <p id="u-school" class="text-[10px] text-slate-500 uppercase tracking-widest"></p>
+            <button onclick="logout()" class="text-rose-400 text-sm mt-4 flex items-center gap-2"><i data-lucide="log-out" class="w-4 h-4"></i>Logout</button>
+        </div>
+    </nav>
+
+    <main id="main-ui" class="hidden flex-1 p-8 overflow-y-auto bg-[#f8fafc]">
+        <div id="tab-dash" class="tab-content">
+            <h1 class="text-3xl font-bold text-slate-800 mb-8">System Overview</h1>
+            <div id="leave-history" class="grid gap-4">
+                </div>
+        </div>
+
+        <div id="tab-apply" class="tab-content hidden max-w-xl mx-auto">
+            <div class="glass-card p-8 shadow-sm">
+                <h2 class="text-xl font-bold mb-6">New Leave Request</h2>
+                <form id="leaveRequestForm" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="date" id="lvDate" required class="p-3 border rounded-xl outline-none">
+                        <input type="number" id="lvDays" placeholder="Days" required class="p-3 border rounded-xl outline-none">
+                    </div>
+                    <select id="lvType" class="w-full p-3 border rounded-xl outline-none">
+                        <option>Casual</option><option>Medical</option><option>Duty</option>
+                    </select>
+                    <textarea id="lvReason" placeholder="Reason for leave..." class="w-full p-3 border rounded-xl outline-none h-32"></textarea>
+                    <button class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold">Submit Application</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="tab-approvals" class="tab-content hidden">
+            <h1 class="text-2xl font-bold mb-6 text-slate-800">Pending Approvals</h1>
+            <div id="approval-list" class="space-y-4"></div>
+        </div>
+    </main>
+
+    <script>
+        // 1. CONFIGURATION (REPLACE WITH YOUR KEYS)
+        const SB_URL = "https://wlzzepbqdeotluxkrthd.supabase.co";
+        const SB_KEY = "sb_publishable_61_5jXI4eiFLGbS6MXLPRA_lNFgmCbt";
+        const supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        let currentUser = null;
+        let userProfile = null;
+        let currentRole = 'teacher';
+
+        // 2. AUTHENTICATION LOGIC
+        const toggleAuth = (t) => {
+            document.getElementById('login-box').classList.toggle('hidden', t === 'reg');
+            document.getElementById('register-box').classList.toggle('hidden', t === 'login');
+        };
+
+        const setRole = (r) => {
+            currentRole = r;
+            document.getElementById('r-t').className = r === 'teacher' ? 'flex-1 py-2 rounded-lg font-bold text-sm bg-white shadow-sm' : 'flex-1 py-2 rounded-lg font-bold text-sm text-slate-500';
+            document.getElementById('r-p').className = r === 'principal' ? 'flex-1 py-2 rounded-lg font-bold text-sm bg-white shadow-sm' : 'flex-1 py-2 rounded-lg font-bold text-sm text-slate-500';
+            document.getElementById('sc-box').classList.toggle('hidden', r === 'principal');
+            document.getElementById('sn-box').classList.toggle('hidden', r === 'teacher');
+        };
+
+        document.getElementById('regForm').onsubmit = async (e) => {
+            e.preventDefault();
+            setLoading(true);
+            const email = document.getElementById('regEmail').value;
+            const pass = document.getElementById('regPass').value;
+            const name = document.getElementById('regName').value;
+            const sName = document.getElementById('regSN').value;
+            const sCode = currentRole === 'principal' ? 'SCH-' + Math.floor(1000 + Math.random()*9000) : document.getElementById('regSC').value;
+
+            const { data, error } = await supabase.auth.signUp({ email, password: pass });
+            if (error) alert(error.message);
+            else {
+                await supabase.from('profiles').insert([{ id: data.user.id, full_name: name, role: currentRole, school_name: sName || 'Staff', school_code: sCode }]);
+                alert("Registered! Your School Code: " + sCode);
+                location.reload();
+            }
+            setLoading(false);
+        };
+
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            setLoading(true);
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            });
+            if (error) alert(error.message);
+            else checkSession();
+            setLoading(false);
+        };
+
+        // 3. CORE APP LOGIC
+        async function checkSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                const { data } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+                userProfile = data;
+                renderUI();
+            }
+        }
+
+        function renderUI() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('sidebar').classList.remove('hidden');
+            document.getElementById('main-ui').classList.remove('hidden');
+            document.getElementById('u-name').innerText = userProfile.full_name;
+            document.getElementById('u-school').innerText = userProfile.school_name + " (" + userProfile.school_code + ")";
+            
+            if(userProfile.role === 'principal') {
+                document.getElementById('p-btn').classList.remove('hidden');
+                document.getElementById('t-btn').classList.add('hidden');
+            }
+            fetchLeaves();
+        }
+
+        async function fetchLeaves() {
+            let query = supabase.from('leaves').select('*').eq('school_code', userProfile.school_code);
+            if(userProfile.role === 'teacher') query = query.eq('user_id', currentUser.id);
+            
+            const { data } = await query.order('start_date', { ascending: false });
+            
+            const hist = document.getElementById('leave-history');
+            const apps = document.getElementById('approval-list');
+            
+            hist.innerHTML = data.map(l => `
+                <div class="glass-card p-5 flex justify-between items-center shadow-sm">
+                    <div>
+                        <p class="font-bold text-slate-800">${l.type} Leave</p>
+                        <p class="text-xs text-slate-500">${l.start_date} • ${l.duration} Days</p>
+                    </div>
+                    <span class="px-4 py-1 rounded-full text-[10px] font-bold status-pill-${l.status.toLowerCase()}">${l.status}</span>
+                </div>
+            `).join('');
+
+            if(userProfile.role === 'principal') {
+                const pending = data.filter(l => l.status === 'Pending');
+                apps.innerHTML = pending.map(l => `
+                    <div class="glass-card p-6 flex justify-between items-center border-l-4 border-blue-500 shadow-sm">
+                        <div>
+                            <p class="font-bold text-lg">${l.user_name}</p>
+                            <p class="text-sm text-slate-500">${l.type} | ${l.start_date} | ${l.reason}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="updateLeave('${l.id}', 'Approved')" class="p-3 bg-emerald-500 text-white rounded-xl shadow-md"><i data-lucide="check"></i></button>
+                            <button onclick="updateLeave('${l.id}', 'Rejected')" class="p-3 bg-rose-500 text-white rounded-xl shadow-md"><i data-lucide="x"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            lucide.createIcons();
+        }
+
+        async function updateLeave(id, status) {
+            await supabase.from('leaves').update({ status }).eq('id', id);
+            fetchLeaves();
+        }
+
+        document.getElementById('leaveRequestForm').onsubmit = async (e) => {
+            e.preventDefault();
+            setLoading(true);
+            const { error } = await supabase.from('leaves').insert([{
+                user_id: currentUser.id,
+                user_name: userProfile.full_name,
+                school_code: userProfile.school_code,
+                type: document.getElementById('lvType').value,
+                start_date: document.getElementById('lvDate').value,
+                duration: document.getElementById('lvDays').value,
+                reason: document.getElementById('lvReason').value
+            }]);
+            if(!error) {
+                alert("Request Sent!");
+                showTab('dash');
+                fetchLeaves();
+            }
+            setLoading(false);
+        };
+
+        function showTab(t) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-'+t).classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function setLoading(s) { document.getElementById('loader').classList.toggle('hidden', !s); }
+        function logout() { supabase.auth.signOut(); location.reload(); }
+        
+        window.onload = checkSession;
+        lucide.createIcons();
+    </script>
+</body>
+</html>
