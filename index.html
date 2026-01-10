@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LankaTeacher Pro | 2026 Portal</title>
+    <title>Master Admin | LankaTeacher Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -12,301 +12,230 @@
         
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: radial-gradient(circle at top left, #f1f5f9 0%, #e2e8f0 100%);
-            min-height: 100vh;
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2564&ixlib=rb-4.0.3') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
         }
 
         .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
-        .nav-link-active {
-            background: linear-gradient(90deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0) 100%);
+        .active-tab {
+            background: rgba(37, 99, 235, 0.2);
             border-left: 4px solid #2563eb;
             color: #1e40af !important;
         }
 
-        .stat-card {
-            background: rgba(255, 255, 255, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            transition: transform 0.2s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.6);
-        }
-
-        /* Smooth tab transitions */
-        .tab-content { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
 
         @media (max-width: 768px) {
             #sidebar { 
-                background: rgba(255, 255, 255, 0.8) !important; 
-                backdrop-filter: blur(20px);
-                border-top: 1px solid rgba(255,255,255,0.3);
+                position: fixed; bottom: 0; width: 100%; height: 70px; 
+                flex-direction: row !important; padding: 0.5rem; border-radius: 0;
             }
-            .nav-link-active { border-left: 0; border-top: 3px solid #2563eb; background: transparent; }
+            #main-content { padding-bottom: 80px; }
+            .hide-mobile { display: none !important; }
         }
     </style>
 </head>
-<body class="flex flex-col md:flex-row overflow-hidden">
+<body class="flex overflow-hidden p-0 md:p-6">
 
-    <div id="loader" class="hidden fixed inset-0 z-[100] bg-white/60 backdrop-blur-md flex flex-col items-center justify-center">
-        <div class="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-        <p class="text-slate-600 font-semibold text-sm tracking-widest uppercase">Synchronizing</p>
+    <div id="loader" class="hidden fixed inset-0 z-[100] bg-white/20 backdrop-blur-xl flex flex-col items-center justify-center">
+        <div class="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
     </div>
 
-    <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-100 flex items-center justify-center p-4">
-        <div class="glass-panel w-full max-w-md p-10 rounded-[2.5rem] relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
-            
-            <div id="login-box">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-slate-900 tracking-tight">LankaTeacher <span class="text-blue-600">Pro</span></h2>
-                    <p class="text-slate-500 font-medium">Cloud Academic Management</p>
-                </div>
-                <form id="loginForm" class="space-y-5">
-                    <input type="email" id="email" required placeholder="Institutional Email" class="w-full px-5 py-4 bg-white/50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
-                    <input type="password" id="password" required placeholder="Security Password" class="w-full px-5 py-4 bg-white/50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-slate-800 transition-all">Authenticate</button>
-                    <button type="button" onclick="toggleAuth('reg')" class="w-full text-slate-500 font-semibold mt-4 text-sm hover:text-blue-600">Create Staff Account</button>
-                </form>
-            </div>
-
-            <div id="register-box" class="hidden">
-                <h2 class="text-2xl font-bold mb-6 text-slate-800">Registration</h2>
-                <form id="regForm" class="space-y-4">
-                    <div class="flex bg-slate-200/50 p-1.5 rounded-2xl mb-4">
-                        <button type="button" onclick="setRole('teacher')" id="btn-t" class="flex-1 py-2.5 rounded-xl font-bold text-xs bg-white shadow-sm transition-all">Teacher</button>
-                        <button type="button" onclick="setRole('principal')" id="btn-p" class="flex-1 py-2.5 rounded-xl font-bold text-xs text-slate-500 transition-all">Principal</button>
-                    </div>
-                    <input type="text" id="regName" required placeholder="Legal Full Name" class="w-full px-4 py-3 bg-white/50 border rounded-xl outline-none">
-                    <input type="email" id="regEmail" required placeholder="Email Address" class="w-full px-4 py-3 bg-white/50 border rounded-xl outline-none">
-                    <input type="password" id="regPass" required placeholder="Password" class="w-full px-4 py-3 bg-white/50 border rounded-xl outline-none">
-                    <div id="school-code-div"><input type="text" id="regSC" placeholder="Unique School Code" class="w-full px-4 py-3 bg-blue-50/50 border border-blue-100 rounded-xl"></div>
-                    <div id="school-name-div" class="hidden"><input type="text" id="regSN" placeholder="Institution Name" class="w-full px-4 py-3 bg-emerald-50/50 border border-emerald-100 rounded-xl"></div>
-                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold mt-4 shadow-lg shadow-blue-500/30">Submit Credentials</button>
-                    <button type="button" onclick="toggleAuth('login')" class="w-full text-slate-400 text-sm mt-4">Return to Login</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <nav id="sidebar" class="hidden w-80 glass-panel md:m-4 md:rounded-[2rem] flex flex-col p-8 z-40 transition-all">
-        <div class="hide-mobile flex items-center gap-4 mb-12">
-            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30 text-white">
-                <i data-lucide="shield-check"></i>
-            </div>
-            <span class="font-bold text-xl text-slate-800 tracking-tight">LankaTeacher</span>
-        </div>
-        
-        <div class="flex flex-row md:flex-col flex-1 gap-2">
-            <button onclick="showTab('dash')" id="nav-dash" class="nav-btn flex-1 md:flex-none flex items-center gap-4 p-4 rounded-xl text-slate-500 nav-link-active transition-all"><i data-lucide="layout-grid" class="w-5 h-5"></i><span class="font-semibold">Insights</span></button>
-            <button onclick="showTab('apply')" id="nav-apply" class="nav-btn teacher-only flex-1 md:flex-none flex items-center gap-4 p-4 rounded-xl text-slate-500 hover:bg-white/50 transition-all"><i data-lucide="file-edit" class="w-5 h-5"></i><span class="font-semibold">Request</span></button>
-            <button onclick="showTab('approvals')" id="nav-approvals" class="nav-btn principal-only hidden flex-1 md:flex-none flex items-center gap-4 p-4 rounded-xl text-slate-500 hover:bg-white/50 transition-all"><i data-lucide="check-circle" class="w-5 h-5"></i><span class="font-semibold">Approve</span></button>
-            <button onclick="showTab('manage')" id="nav-manage" class="nav-btn principal-only hidden flex-1 md:flex-none flex items-center gap-4 p-4 rounded-xl text-slate-500 hover:bg-white/50 transition-all"><i data-lucide="users" class="w-5 h-5"></i><span class="font-semibold">Staff</span></button>
-            <button onclick="logout()" class="md:hidden flex-1 flex flex-col items-center gap-1 p-3 text-rose-500"><i data-lucide="log-out"></i><span class="text-[10px] font-bold">Exit</span></button>
+    <nav id="sidebar" class="glass-panel w-72 rounded-[2.5rem] flex flex-col p-8 z-50 mr-6 hide-mobile">
+        <div class="flex items-center gap-3 mb-10">
+            <div class="bg-blue-600 p-2 rounded-xl text-white shadow-lg"><i data-lucide="shield-check"></i></div>
+            <h1 class="font-bold text-xl tracking-tighter">ADMIN OS</h1>
         </div>
 
-        <div class="hide-mobile mt-auto pt-8 border-t border-slate-200">
-            <div class="mb-6 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold" id="u-avatar">?</div>
-                <div class="overflow-hidden">
-                    <p id="u-name" class="font-bold text-sm text-slate-800 truncate">User Name</p>
-                    <p id="u-school" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider truncate">Code</p>
-                </div>
-            </div>
-            <button onclick="logout()" class="w-full flex items-center justify-center gap-3 p-4 rounded-2xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 transition-all"><i data-lucide="power" class="w-4 h-4"></i>Sign Out</button>
-            <div class="mt-6 text-[10px] text-slate-400 font-medium text-center leading-relaxed">
-                © 2026 <br> Developer by K.A.V.Rashmika
-            </div>
+        <div class="flex-1 space-y-2">
+            <button onclick="switchTab('overview')" id="btn-overview" class="tab-link w-full flex items-center gap-3 p-4 rounded-2xl text-slate-600 active-tab transition-all">
+                <i data-lucide="layout-dashboard"></i><span class="font-bold">System Hub</span>
+            </button>
+            <button onclick="switchTab('schools')" id="btn-schools" class="tab-link w-full flex items-center gap-3 p-4 rounded-2xl text-slate-600 hover:bg-white/30 transition-all">
+                <i data-lucide="school"></i><span class="font-bold">Institutions</span>
+            </button>
+            <button onclick="switchTab('users')" id="btn-users" class="tab-link w-full flex items-center gap-3 p-4 rounded-2xl text-slate-600 hover:bg-white/30 transition-all">
+                <i data-lucide="users-2"></i><span class="font-bold">Staff Control</span>
+            </button>
+        </div>
+
+        <div class="mt-auto border-t border-white/30 pt-6">
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 p-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl">
+                <i data-lucide="power" class="w-4 h-4"></i> Sign Out
+            </button>
+            <p class="mt-6 text-[10px] text-center font-bold text-slate-500 uppercase">
+                © 2026 Developer by K.A.V.Rashmika
+            </p>
         </div>
     </nav>
 
-    <main id="main-ui" class="hidden flex-1 overflow-y-auto p-6 md:p-12">
-        <div id="tab-dash" class="tab-content space-y-8">
-            <div class="flex justify-between items-end">
-                <div>
-                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Institutional Insights</h1>
-                    <p class="text-slate-500">Real-time status of staff activity</p>
-                </div>
-                <button onclick="downloadReport()" class="principal-only hidden bg-white border border-slate-200 px-6 py-2.5 rounded-xl text-sm font-bold text-slate-700 shadow-sm hover:shadow-md transition-all">Download Audit CSV</button>
+    <main id="main-content" class="flex-1 glass-panel rounded-[2.5rem] overflow-hidden flex flex-col">
+        
+        <header class="p-8 flex justify-between items-center border-b border-white/30 bg-white/10">
+            <div>
+                <h2 id="view-title" class="text-2xl font-black text-slate-800 uppercase tracking-tight">System Hub</h2>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Platform Management</p>
             </div>
+            <div class="flex gap-4">
+                <button onclick="openModal('school')" class="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-blue-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                    <i data-lucide="plus"></i> Add Institution
+                </button>
+            </div>
+        </header>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="stat-card p-8 rounded-[2rem]">
-                    <div class="flex justify-between items-start mb-4">
-                        <p class="text-[11px] uppercase font-bold text-slate-400 tracking-widest">Active Staff</p>
-                        <i data-lucide="users" class="w-5 h-5 text-blue-500"></i>
-                    </div>
-                    <h3 class="text-4xl font-bold text-slate-800" id="stat-staff">0</h3>
-                </div>
-                <div class="stat-card p-8 rounded-[2rem]">
-                    <div class="flex justify-between items-start mb-4">
-                        <p class="text-[11px] uppercase font-bold text-slate-400 tracking-widest">Pending Review</p>
-                        <i data-lucide="clock" class="w-5 h-5 text-amber-500"></i>
-                    </div>
-                    <h3 class="text-4xl font-bold text-slate-800" id="stat-pending">0</h3>
-                </div>
-            </div>
-
-            <div class="glass-panel rounded-[2rem] overflow-hidden">
-                <div class="px-8 py-5 border-b border-slate-200/50 flex justify-between items-center bg-white/30">
-                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Leave Logs</h2>
-                    <span class="px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full">LIVE SYNC</span>
-                </div>
-                <div class="overflow-x-auto px-4 pb-4">
-                    <table class="w-full text-left text-sm">
-                        <thead class="text-slate-400 uppercase text-[10px] font-bold">
-                            <tr><th class="p-4">Staff Member</th><th class="p-4">Classification</th><th class="p-4 text-right">Status</th></tr>
-                        </thead>
-                        <tbody id="dash-table" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
             
-            <div class="md:hidden text-center py-6 text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
-                © 2026 Developer by K.A.V.Rashmika
+            <div id="tab-overview" class="tab-view space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white/40 p-8 rounded-[2rem] border border-white/50">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Total Schools</p>
+                        <h3 class="text-5xl font-black text-slate-800" id="stat-schools">0</h3>
+                    </div>
+                    <div class="bg-blue-600/10 p-8 rounded-[2rem] border border-blue-200/50">
+                        <p class="text-[10px] font-black text-blue-400 uppercase tracking-tighter">Global Staff</p>
+                        <h3 class="text-5xl font-black text-blue-600" id="stat-users">0</h3>
+                    </div>
+                    <div class="bg-white/40 p-8 rounded-[2rem] border border-white/50">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Pending Actions</p>
+                        <h3 class="text-5xl font-black text-slate-800" id="stat-actions">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white/30 rounded-[2.5rem] p-8 border border-white/40">
+                    <h4 class="font-bold text-slate-700 mb-6 uppercase text-sm tracking-widest">Global Activity Feed</h4>
+                    <div id="global-activity" class="space-y-4"></div>
+                </div>
             </div>
+
+            <div id="tab-schools" class="tab-view hidden grid grid-cols-1 md:grid-cols-2 gap-6" id="school-grid"></div>
+
+            <div id="tab-users" class="tab-view hidden space-y-4">
+                <div class="flex justify-end gap-2 mb-4">
+                    <button onclick="openModal('staff')" class="bg-slate-900 text-white px-6 py-3 rounded-xl text-xs font-bold uppercase">Manually Add Staff</button>
+                </div>
+                <div id="user-list" class="space-y-3"></div>
+            </div>
+
         </div>
-
-        <div id="tab-apply" class="tab-content hidden"><div class="glass-panel p-10 max-w-xl mx-auto rounded-[2.5rem]">
-            <h2 class="text-2xl font-bold mb-8 text-slate-800 flex items-center gap-3"><i data-lucide="file-plus" class="text-blue-600"></i>New Leave Application</h2>
-            <form id="leaveForm" class="space-y-6">
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="space-y-2">
-                        <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Effective Date</label>
-                        <input type="date" id="lvDate" required class="w-full p-4 bg-white/50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Total Days</label>
-                        <input type="number" id="lvDays" value="1" min="1" class="w-full p-4 bg-white/50 border border-slate-200 rounded-2xl outline-none">
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Category</label>
-                    <select id="lvType" class="w-full p-4 bg-white/50 border border-slate-200 rounded-2xl outline-none"><option>Casual</option><option>Medical</option><option>Official Duty</option></select>
-                </div>
-                <div class="space-y-2">
-                    <label class="text-[11px] font-bold text-slate-400 uppercase ml-1">Justification</label>
-                    <textarea id="lvReason" placeholder="Describe the reason for your absence..." class="w-full p-4 bg-white/50 border border-slate-200 rounded-2xl h-32 outline-none"></textarea>
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold shadow-xl shadow-blue-500/20 hover:scale-[1.01] active:scale-[0.98] transition-all">Submit for Review</button>
-            </form>
-        </div></div>
-
-        <div id="tab-approvals" class="tab-content hidden space-y-4"></div>
-        <div id="tab-manage" class="tab-content hidden space-y-3"><div id="staff-table" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
     </main>
+
+    <div id="modal-school" class="hidden fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl scale-in">
+            <h3 class="text-2xl font-black mb-6">Create Institution</h3>
+            <form id="schoolForm" class="space-y-4">
+                <input type="text" id="schName" placeholder="School Name" required class="w-full p-4 bg-slate-100 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="schCode" placeholder="School Code (e.g. SC-7821)" required class="w-full p-4 bg-slate-100 border-none rounded-2xl outline-none">
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeModal()" class="flex-1 font-bold text-slate-400">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg">Provision</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-staff" class="hidden fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl">
+            <h3 class="text-2xl font-black mb-6">Add Staff Member</h3>
+            <form id="staffForm" class="space-y-4">
+                <input type="text" id="stName" placeholder="Full Name" required class="w-full p-4 bg-slate-100 border-none rounded-2xl outline-none">
+                <input type="email" id="stEmail" placeholder="Email Address" required class="w-full p-4 bg-slate-100 border-none rounded-2xl outline-none">
+                <select id="stRole" class="w-full p-4 bg-slate-100 border-none rounded-2xl outline-none">
+                    <option value="teacher">Teacher</option>
+                    <option value="principal">Principal</option>
+                </select>
+                <select id="stSchool" class="w-full p-4 bg-slate-100 border-none rounded-2xl outline-none"></select>
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeModal()" class="flex-1 font-bold text-slate-400">Cancel</button>
+                    <button type="submit" class="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-lg">Register</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
         const SB_URL = "https://wlzzepbqdeotluxkrthd.supabase.co"; 
         const SB_KEY = "sb_publishable_61_5jXI4eiFLGbS6MXLPRA_lNFgmCbt"; 
-        const _db = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true } });
+        const _db = supabase.createClient(SB_URL, SB_KEY);
 
-        let activeUser = null;
-
-        async function checkSession() {
-            const { data: { session } } = await _db.auth.getSession();
-            if (session) {
-                const { data } = await _db.from('profiles').select('*').eq('id', session.user.id).single();
-                if (data) { activeUser = data; renderUI(); }
-            }
-        }
-
-        function renderUI() {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('sidebar').classList.remove('hidden');
-            document.getElementById('main-ui').classList.remove('hidden');
-            document.getElementById('u-name').innerText = activeUser.full_name;
-            document.getElementById('u-school').innerText = activeUser.school_code;
-            document.getElementById('u-avatar').innerText = activeUser.full_name.charAt(0);
-            
-            if (activeUser.role === 'principal') {
-                document.querySelectorAll('.principal-only').forEach(e => e.classList.remove('hidden'));
-                document.querySelectorAll('.teacher-only').forEach(e => e.classList.add('hidden'));
-            }
-            refreshData();
-        }
-
-        async function refreshData() {
+        async function initAdmin() {
             setLoading(true);
-            try {
-                const { data: staff } = await _db.from('profiles').select('*').eq('school_code', activeUser.school_code);
-                document.getElementById('stat-staff').innerText = staff?.length || 0;
-                document.getElementById('staff-table').innerHTML = staff.map(s => `
-                    <div class="glass-panel p-6 flex justify-between items-center rounded-2xl">
-                        <div><p class="font-bold text-slate-800">${s.full_name}</p><p class="text-[10px] font-bold text-slate-400 uppercase">${s.role}</p></div>
-                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400"><i data-lucide="user" class="w-4 h-4"></i></div>
-                    </div>`).join('');
+            const { data: schools } = await _db.from('schools').select('*');
+            const { data: profiles } = await _db.from('profiles').select('*');
+            
+            // Render Stats
+            document.getElementById('stat-schools').innerText = schools?.length || 0;
+            document.getElementById('stat-users').innerText = profiles?.length || 0;
 
-                const { data: leaves } = await _db.from('leaves').select('*').eq('school_code', activeUser.school_code).order('created_at', { ascending: false });
-                const pending = (leaves || []).filter(l => l.status === 'Pending');
-                document.getElementById('stat-pending').innerText = pending.length || 0;
+            // Render Schools in Modal dropdown
+            document.getElementById('stSchool').innerHTML = schools.map(s => `<option value="${s.school_code}">${s.name}</option>`).join('');
 
-                const view = activeUser.role === 'teacher' ? (leaves || []).filter(l => l.user_id === activeUser.id) : (leaves || []);
-                document.getElementById('dash-table').innerHTML = view.map(l => `
-                    <tr class="hover:bg-white/40 transition-colors">
-                        <td class="p-4 font-semibold text-slate-700">${l.user_name}</td>
-                        <td class="p-4 text-slate-500 text-xs">${l.type}</td>
-                        <td class="p-4 text-right"><span class="px-3 py-1 rounded-full text-[10px] font-bold ${l.status === 'Approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}">${l.status.toUpperCase()}</span></td>
-                    </tr>`).join('');
+            // Render Activity
+            document.getElementById('global-activity').innerHTML = profiles.slice(0, 5).map(u => `
+                <div class="flex items-center justify-between p-4 bg-white/40 rounded-2xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">${u.full_name[0]}</div>
+                        <div><p class="font-bold text-sm">${u.full_name}</p><p class="text-[10px] text-slate-500 uppercase font-bold">${u.role}</p></div>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-400">${u.school_code}</p>
+                </div>
+            `).join('');
 
-                if(activeUser.role === 'principal') {
-                    document.getElementById('tab-approvals').innerHTML = pending.length ? pending.map(l => `
-                        <div class="glass-panel p-6 flex justify-between items-center rounded-3xl border-l-4 border-l-blue-500">
-                            <div><p class="font-bold text-slate-800">${l.user_name}</p><p class="text-xs text-slate-400">${l.type} • ${l.start_date} (${l.duration} Days)</p></div>
-                            <div class="flex gap-2">
-                                <button onclick="updStatus('${l.id}', 'Approved')" class="p-3 bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-500/20"><i data-lucide="check" class="w-5 h-5"></i></button>
-                                <button onclick="updStatus('${l.id}', 'Rejected')" class="p-3 bg-rose-500 text-white rounded-xl shadow-lg shadow-rose-500/20"><i data-lucide="x" class="w-5 h-5"></i></button>
-                            </div>
-                        </div>`).join('') : '<div class="text-center py-20 text-slate-400 font-medium">All applications have been processed.</div>';
-                }
-            } catch (err) { console.error(err); }
-            setLoading(false); lucide.createIcons();
-        }
+            // Render School Cards
+            document.getElementById('tab-schools').innerHTML = schools.map(s => `
+                <div class="bg-white/40 p-8 rounded-[2rem] border border-white/50 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10"><i data-lucide="school" class="w-20 h-20"></i></div>
+                    <h4 class="text-xl font-black text-slate-800">${s.name}</h4>
+                    <p class="text-xs font-bold text-blue-600 mb-6">${s.school_code}</p>
+                    <div class="flex justify-between items-center pt-4 border-t border-white/50">
+                        <span class="text-[10px] font-bold uppercase text-slate-400">Manage Members</span>
+                        <button class="text-slate-800 hover:text-blue-600"><i data-lucide="arrow-right-circle"></i></button>
+                    </div>
+                </div>
+            `).join('');
 
-        async function updStatus(id, s) { setLoading(true); await _db.from('leaves').update({ status: s }).eq('id', id); refreshData(); }
-        function showTab(t) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.getElementById('tab-'+t).classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-link-active'));
-            document.getElementById('nav-'+t).classList.add('nav-link-active');
+            setLoading(false);
             lucide.createIcons();
         }
+
+        // TAB LOGIC
+        function switchTab(t) {
+            document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active-tab'));
+            document.getElementById('tab-'+t).classList.remove('hidden');
+            document.getElementById('btn-'+t).classList.add('active-tab');
+            document.getElementById('view-title').innerText = t === 'overview' ? 'System Hub' : t;
+            lucide.createIcons();
+        }
+
+        // MODAL LOGIC
+        function openModal(id) { document.getElementById('modal-'+id).classList.remove('hidden'); }
+        function closeModal() { 
+            document.getElementById('modal-school').classList.add('hidden'); 
+            document.getElementById('modal-staff').classList.add('hidden'); 
+        }
+
         function setLoading(s) { document.getElementById('loader').classList.toggle('hidden', !s); }
-        function toggleAuth(m) { document.getElementById('login-box').classList.toggle('hidden', m==='reg'); document.getElementById('register-box').classList.toggle('hidden', m==='login'); }
-        function setRole(r) { window.selectedRole = r; document.getElementById('btn-t').className = r === 'teacher' ? 'flex-1 py-2.5 rounded-xl font-bold text-xs bg-white shadow-sm' : 'flex-1 py-2.5 rounded-xl font-bold text-xs text-slate-400'; document.getElementById('btn-p').className = r === 'principal' ? 'flex-1 py-2.5 rounded-xl font-bold text-xs bg-white shadow-sm' : 'flex-1 py-2.5 rounded-xl font-bold text-xs text-slate-400'; document.getElementById('school-code-div').classList.toggle('hidden', r==='principal'); document.getElementById('school-name-div').classList.toggle('hidden', r==='teacher'); }
-        async function logout() { await _db.auth.signOut(); location.reload(); }
 
-        document.getElementById('leaveForm').onsubmit = async (e) => {
-            e.preventDefault(); setLoading(true);
-            const { error } = await _db.from('leaves').insert([{ user_id: activeUser.id, user_name: activeUser.full_name, school_code: activeUser.school_code, type: document.getElementById('lvType').value, start_date: document.getElementById('lvDate').value, duration: parseInt(document.getElementById('lvDays').value), status: 'Pending', reason: document.getElementById('lvReason').value }]);
-            if(error) alert(error.message); else { showTab('dash'); refreshData(); e.target.reset(); }
-            setLoading(false);
+        // FORM SUBMISSIONS
+        document.getElementById('schoolForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const { error } = await _db.from('schools').insert([{ 
+                name: document.getElementById('schName').value, 
+                school_code: document.getElementById('schCode').value 
+            }]);
+            if(error) alert(error.message); else { closeModal(); initAdmin(); }
         };
 
-        document.getElementById('loginForm').onsubmit = async (e) => { e.preventDefault(); setLoading(true); const { error } = await _db.auth.signInWithPassword({ email: document.getElementById('email').value, password: document.getElementById('password').value }); if(error) { alert(error.message); setLoading(false); } else checkSession(); };
-        
-        document.getElementById('regForm').onsubmit = async (e) => {
-            e.preventDefault(); setLoading(true);
-            const email = document.getElementById('regEmail').value;
-            const code = (window.selectedRole === 'principal') ? 'SC-' + Math.floor(1000 + Math.random()*9000) : document.getElementById('regSC').value;
-            const { data, error } = await _db.auth.signUp({ email, password: document.getElementById('regPass').value });
-            if(error) alert(error.message); else {
-                await _db.from('profiles').insert([{ id: data.user.id, full_name: document.getElementById('regName').value, role: window.selectedRole || 'teacher', school_code: code }]);
-                alert("Credentials Registered. Access Code: " + code); location.reload();
-            }
-            setLoading(false);
-        };
-
-        window.onload = () => { setRole('teacher'); checkSession(); lucide.createIcons(); };
+        window.onload = () => { initAdmin(); lucide.createIcons(); };
     </script>
 </body>
 </html>
