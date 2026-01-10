@@ -3,261 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GuruNiwadu | Admin Central</title>
+    <title>GuruNiwadu | Registration Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --p: #1a365d; --s: #2d3748; --acc: #38b2ac; --bg: #f7fafc; --white: #ffffff; --danger: #e53e3e; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background: var(--bg); color: var(--s); line-height: 1.6; }
+        :root { --p: #1a365d; --acc: #38b2ac; --bg: #f7fafc; --white: #ffffff; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
         .hidden { display: none !important; }
-
-        /* Navigation */
-        nav { background: var(--p); color: white; padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .nav-brand { font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-        
-        /* Layout */
-        .container { max-width: 1200px; margin: 2rem auto; width: 92%; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
-        
-        /* Cards & UI */
-        .card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
-        .stat-card { text-align: center; border-bottom: 4px solid var(--acc); }
-        .stat-num { font-size: 2.5rem; font-weight: 800; color: var(--p); }
-
-        /* Forms */
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; }
-        button { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-p { background: var(--p); color: white; }
-        .btn-acc { background: var(--acc); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-
-        /* Tables */
-        .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #edf2f7; }
-        th { background: #f8fafc; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
-        
-        /* Status Badges */
-        .badge { padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; }
-        .status-Pending { background: #fefcbf; color: #975a16; }
-        .status-Approved { background: #c6f6d5; color: #22543d; }
-        .status-Rejected { background: #fed7d7; color: #822727; }
-
-        /* Auth Screen */
-        .auth-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--p); }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
+        button { width: 100%; padding: 12px; background: var(--p); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .toggle-link { text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666; cursor: pointer; text-decoration: underline; }
+        .role-selector { display: flex; gap: 10px; margin-bottom: 10px; }
+        .role-btn { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; text-align: center; }
+        .role-btn.active { background: var(--acc); color: white; border-color: var(--acc); }
     </style>
 </head>
 <body>
 
-    <div id="view-auth" class="auth-screen">
-        <div class="card" style="width: 100%; max-width: 400px;">
-            <div style="text-align: center; margin-bottom: 2rem;">
-                <i class="fas fa-university fa-3x" style="color: var(--acc);"></i>
-                <h1 style="margin-top: 1rem;">GuruNiwadu</h1>
-                <p>Management Portal</p>
-            </div>
-            <input type="email" id="auth-email" placeholder="Email Address">
-            <input type="password" id="auth-pass" placeholder="Password">
-            <button class="btn-p" onclick="handleSignIn()" style="width: 100%; justify-content: center;">
-                <i class="fas fa-sign-in-alt"></i> Login
-            </button>
-            <p id="auth-error" style="color: var(--danger); font-size: 0.8rem; margin-top: 10px;" class="hidden"></p>
+    <div class="card">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <i class="fas fa-chalkboard-teacher fa-3x" style="color: var(--p);"></i>
+            <h2 id="form-title">Welcome Back</h2>
         </div>
-    </div>
 
-    <div id="view-app" class="hidden">
-        <nav>
-            <div class="nav-brand"><i class="fas fa-leaf"></i> GuruNiwadu</div>
-            <div id="user-info" style="font-size: 0.9rem;">
-                <span id="user-name">Loading...</span> | 
-                <button onclick="handleSignOut()" style="background:transparent; color:white; padding:0; font-size:0.8rem;">Logout</button>
+        <div id="login-section">
+            <input type="email" id="login-email" placeholder="Email Address">
+            <input type="password" id="login-pass" placeholder="Password">
+            <button onclick="handleLogin()">Login</button>
+            <div class="toggle-link" onclick="switchForm('reg')">Don't have an account? Register</div>
+        </div>
+
+        <div id="reg-section" class="hidden">
+            <div class="role-selector">
+                <div id="role-t" class="role-btn active" onclick="setRole('teacher')">Teacher</div>
+                <div id="role-p" class="role-btn" onclick="setRole('principal')">Principal</div>
             </div>
-        </nav>
-
-        <div class="container">
             
-            <div id="role-superadmin" class="hidden">
-                <div class="grid">
-                    <div class="card stat-card"><div class="stat-num" id="stat-schools">0</div><div>Total Schools</div></div>
-                    <div class="card stat-card"><div class="stat-num" id="stat-teachers">0</div><div>Registered Users</div></div>
-                </div>
-                
-                <div class="card">
-                    <h3><i class="fas fa-plus-circle"></i> Register New School</h3>
-                    <div class="grid" style="grid-template-columns: 2fr 1fr auto; align-items: end;">
-                        <div><label>School Name</label><input type="text" id="new-school-name"></div>
-                        <div><label>Province</label><select id="new-school-prov"><option>Western</option><option>Central</option><option>Southern</option></select></div>
-                        <button class="btn-acc" onclick="addSchool()">Create School</button>
-                    </div>
-                </div>
+            <input type="text" id="reg-name" placeholder="Full Name">
+            <input type="email" id="reg-email" placeholder="Email Address">
+            <input type="password" id="reg-pass" placeholder="Password (min 6 chars)">
+            
+            <select id="reg-school-select">
+                <option value="">Select Your School</option>
+            </select>
 
-                <div class="card">
-                    <h3><i class="fas fa-list"></i> Managed Schools</h3>
-                    <div class="table-wrap">
-                        <table id="table-schools"><thead><tr><th>ID</th><th>School Name</th><th>Province</th><th>Created</th></tr></thead><tbody></tbody></table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="role-principal" class="hidden">
-                <div class="card">
-                    <h2><i class="fas fa-clipboard-check"></i> Leave Approvals</h2>
-                    <div class="table-wrap">
-                        <table id="table-approvals">
-                            <thead><tr><th>Teacher</th><th>Date</th><th>Type</th><th>Reason</th><th>Action</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="role-teacher" class="hidden">
-                <div class="grid">
-                    <div class="card">
-                        <h3><i class="fas fa-paper-plane"></i> Apply for Leave</h3>
-                        <label>Leave Type</label>
-                        <select id="leave-type"><option>Casual</option><option>Medical</option><option>Duty</option></select>
-                        <label>Start Date</label>
-                        <input type="date" id="leave-date">
-                        <label>Number of Days</label>
-                        <input type="number" id="leave-days" step="0.5" value="1">
-                        <textarea id="leave-reason" placeholder="Explain the reason..."></textarea>
-                        <button class="btn-p" onclick="requestLeave()">Submit Application</button>
-                    </div>
-                    <div class="card">
-                        <h3><i class="fas fa-history"></i> My Leave History</h3>
-                        <div class="table-wrap">
-                            <table id="table-my-leaves"><thead><tr><th>Date</th><th>Status</th></tr></thead><tbody></tbody></table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            <button onclick="handleSignUp()" id="btn-signup">Create Account</button>
+            <div class="toggle-link" onclick="switchForm('login')">Already registered? Login</div>
         </div>
     </div>
 
     <script>
-        // --- INITIALIZE SUPABASE ---
         const SB_URL = "https://fvwtrzwqpukojqgcseiq.supabase.co";
         const SB_KEY = "sb_publishable_Yq4ClmL2Mk4bZrrEQzdgtQ_lP9YI4-M";
         const supabase = window.supabase.createClient(SB_URL, SB_KEY);
 
-        let currentUser = null;
+        let selectedRole = 'teacher';
 
-        // --- AUTH FUNCTIONS ---
-        async function handleSignIn() {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-pass').value;
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) {
-                const errEl = document.getElementById('auth-error');
-                errEl.innerText = error.message;
-                errEl.classList.remove('hidden');
-            } else {
-                checkSession();
+        // 1. Fetch schools for the registration dropdown
+        async function loadSchools() {
+            const { data } = await supabase.from('schools').select('*');
+            const select = document.getElementById('reg-school-select');
+            data.forEach(s => {
+                select.innerHTML += `<option value="${s.id}">${s.school_name}</option>`;
+            });
+        }
+
+        function setRole(role) {
+            selectedRole = role;
+            document.getElementById('role-t').classList.toggle('active', role === 'teacher');
+            document.getElementById('role-p').classList.toggle('active', role === 'principal');
+        }
+
+        function switchForm(type) {
+            document.getElementById('login-section').classList.toggle('hidden', type === 'reg');
+            document.getElementById('reg-section').classList.toggle('hidden', type === 'login');
+            document.getElementById('form-title').innerText = type === 'reg' ? 'Create Account' : 'Welcome Back';
+        }
+
+        // 2. FIXED REGISTRATION LOGIC
+        async function handleSignUp() {
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-pass').value;
+            const name = document.getElementById('reg-name').value;
+            const schoolId = document.getElementById('reg-school-select').value;
+
+            if(!email || !password || !name || !schoolId) return alert("Please fill all fields");
+
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    // This metadata is sent to our SQL Trigger!
+                    data: {
+                        full_name: name,
+                        role: selectedRole,
+                        school_id: schoolId
+                    }
+                }
+            });
+
+            if (error) alert(error.message);
+            else {
+                alert("Registration Successful! You can now login.");
+                switchForm('login');
             }
         }
 
-        async function handleSignOut() {
-            await supabase.auth.signOut();
-            location.reload();
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-pass').value;
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) alert(error.message);
+            else window.location.href = "dashboard.html"; // Redirect to your dashboard file
         }
 
-        async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await supabase.from('profiles').select('*, schools(*)').eq('id', session.user.id).single();
-                currentUser = profile;
-                showDashboard();
-            }
-        }
-
-        // --- UI ROUTING ---
-        function showDashboard() {
-            document.getElementById('view-auth').classList.add('hidden');
-            document.getElementById('view-app').classList.remove('hidden');
-            document.getElementById('user-name').innerText = currentUser.full_name;
-
-            // Show Specific UI
-            if (currentUser.role === 'superadmin') {
-                document.getElementById('role-superadmin').classList.remove('hidden');
-                loadSuperAdminData();
-            } else if (currentUser.role === 'principal') {
-                document.getElementById('role-principal').classList.remove('hidden');
-                loadPrincipalData();
-            } else {
-                document.getElementById('role-teacher').classList.remove('hidden');
-                loadTeacherData();
-            }
-        }
-
-        // --- SUPER ADMIN LOGIC ---
-        async function loadSuperAdminData() {
-            const { data: schools } = await supabase.from('schools').select('*');
-            const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-            
-            document.getElementById('stat-schools').innerText = schools.length;
-            document.getElementById('stat-teachers').innerText = userCount;
-
-            const tbody = document.querySelector('#table-schools tbody');
-            tbody.innerHTML = schools.map(s => `<tr><td>${s.id.slice(0,8)}</td><td>${s.school_name}</td><td>${s.province}</td><td>${new Date(s.created_at).toLocaleDateString()}</td></tr>`).join('');
-        }
-
-        async function addSchool() {
-            const name = document.getElementById('new-school-name').value;
-            const prov = document.getElementById('new-school-prov').value;
-            if(!name) return alert("Enter school name");
-            await supabase.from('schools').insert([{ school_name: name, province: prov }]);
-            loadSuperAdminData();
-        }
-
-        // --- PRINCIPAL LOGIC ---
-        async function loadPrincipalData() {
-            const { data } = await supabase.from('leave_requests').select('*, profiles(full_name)').eq('school_id', currentUser.school_id).eq('status', 'Pending');
-            const tbody = document.querySelector('#table-approvals tbody');
-            tbody.innerHTML = data.map(r => `
-                <tr>
-                    <td>${r.profiles.full_name}</td>
-                    <td>${r.start_date}</td>
-                    <td>${r.leave_type}</td>
-                    <td>${r.reason}</td>
-                    <td>
-                        <button onclick="decideLeave('${r.id}', 'Approved')" class="btn-acc" style="padding:5px 10px"><i class="fas fa-check"></i></button>
-                        <button onclick="decideLeave('${r.id}', 'Rejected')" class="btn-danger" style="padding:5px 10px"><i class="fas fa-times"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        async function decideLeave(id, status) {
-            await supabase.from('leave_requests').update({ status }).eq('id', id);
-            loadPrincipalData();
-        }
-
-        // --- TEACHER LOGIC ---
-        async function requestLeave() {
-            const payload = {
-                teacher_id: currentUser.id,
-                school_id: currentUser.school_id,
-                leave_type: document.getElementById('leave-type').value,
-                start_date: document.getElementById('leave-date').value,
-                days: document.getElementById('leave-days').value,
-                reason: document.getElementById('leave-reason').value
-            };
-            await supabase.from('leave_requests').insert([payload]);
-            alert("Application Sent!");
-            loadTeacherData();
-        }
-
-        async function loadTeacherData() {
-            const { data } = await supabase.from('leave_requests').select('*').eq('teacher_id', currentUser.id).order('created_at', { ascending: false });
-            const tbody = document.querySelector('#table-my-leaves tbody');
-            tbody.innerHTML = data.map(r => `<tr><td>${r.start_date} (${r.days}d)</td><td><span class="badge status-${r.status}">${r.status}</span></td></tr>`).join('');
-        }
-
-        // Startup
-        window.onload = checkSession;
+        window.onload = loadSchools;
     </script>
 </body>
 </html>
