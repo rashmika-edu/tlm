@@ -3,182 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LankaTeacher Cloud | Fixed</title>
+    <title>LankaTeacher Pro | Cloud Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow: hidden; height: 100vh; }
+        .glass-card { background: white; border: 1px solid #e2e8f0; border-radius: 1.5rem; transition: all 0.2s; }
+        .nav-active { background-color: #2563eb !important; color: white !important; }
+        .status-pill-pending { background-color: #fef3c7; color: #92400e; }
+        .status-pill-approved { background-color: #dcfce7; color: #166534; }
         .hidden { display: none !important; }
         .loader { border-top-color: #2563eb; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="flex min-h-screen">
+<body class="flex">
 
-    <div id="loader" class="hidden fixed inset-0 z-[100] bg-white/90 flex flex-col items-center justify-center">
+    <div id="loader" class="hidden fixed inset-0 z-[100] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center">
         <div class="loader w-12 h-12 border-4 border-slate-200 rounded-full mb-4"></div>
-        <p class="text-blue-600 font-bold animate-pulse">Communicating with Cloud...</p>
+        <p class="text-blue-600 font-bold">Connecting to Cloud...</p>
     </div>
 
-    <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white w-full max-w-md p-8 rounded-[2rem] shadow-2xl">
+    <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl">
             <div id="login-box">
                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-extrabold text-slate-800">Welcome</h2>
-                    <p class="text-slate-500">Sign in to your school portal</p>
+                    <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
+                        <i data-lucide="shield-check" class="text-white w-8 h-8"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800">LankaTeacher Pro</h2>
+                    <p class="text-slate-500">Sign in to your school management portal</p>
                 </div>
                 <form id="loginForm" class="space-y-4">
                     <input type="email" id="email" required placeholder="Email Address" class="w-full p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
                     <input type="password" id="password" required placeholder="Password" class="w-full p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
-                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">Login</button>
-                    <button type="button" onclick="toggleAuth('reg')" class="w-full text-blue-600 font-semibold mt-4">Create a New Account</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">Login</button>
+                    <button type="button" onclick="toggleAuth('reg')" class="w-full text-blue-600 font-semibold mt-4">New school or teacher? Register</button>
                 </form>
             </div>
 
             <div id="register-box" class="hidden">
-                <h2 class="text-2xl font-bold mb-6 text-center">New Registration</h2>
+                <h2 class="text-2xl font-bold mb-6 text-center">Registration</h2>
                 <form id="regForm" class="space-y-3">
-                    <div class="flex bg-slate-100 p-1 rounded-xl mb-4">
-                        <button type="button" onclick="setRole('teacher')" id="btn-t" class="flex-1 py-2 rounded-lg font-bold text-sm bg-white shadow-sm">Teacher</button>
-                        <button type="button" onclick="setRole('principal')" id="btn-p" class="flex-1 py-2 rounded-lg font-bold text-sm text-slate-500">Principal</button>
+                    <div class="flex bg-slate-100 p-1 rounded-2xl mb-4">
+                        <button type="button" onclick="setRole('teacher')" id="btn-t" class="flex-1 py-2 rounded-xl font-bold text-sm bg-white shadow-sm">Teacher</button>
+                        <button type="button" onclick="setRole('principal')" id="btn-p" class="flex-1 py-2 rounded-xl font-bold text-sm text-slate-500">Principal</button>
                     </div>
-                    <input type="text" id="regName" required placeholder="Full Name" class="w-full p-3 border rounded-xl outline-none">
-                    <input type="email" id="regEmail" required placeholder="Email Address" class="w-full p-3 border rounded-xl outline-none">
-                    <input type="password" id="regPass" required placeholder="Create Password" class="w-full p-3 border rounded-xl outline-none">
-                    
-                    <div id="school-code-input">
-                        <input type="text" id="regSC" placeholder="Enter School Code (Provided by Principal)" class="w-full p-3 border rounded-xl bg-blue-50 outline-none">
-                    </div>
-                    <div id="school-name-input" class="hidden">
-                        <input type="text" id="regSN" placeholder="School Name (e.g. Royal College)" class="w-full p-3 border rounded-xl bg-emerald-50 outline-none">
-                    </div>
-
-                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold mt-2">Create Account</button>
+                    <input type="text" id="regName" required placeholder="Full Name" class="w-full p-4 border rounded-2xl outline-none">
+                    <input type="email" id="regEmail" required placeholder="Email Address" class="w-full p-4 border rounded-2xl outline-none">
+                    <input type="password" id="regPass" required placeholder="Password" class="w-full p-4 border rounded-2xl outline-none">
+                    <div id="sc-input"><input type="text" id="regSC" placeholder="School Code (Ask Principal)" class="w-full p-4 border rounded-2xl bg-blue-50"></div>
+                    <div id="sn-input" class="hidden"><input type="text" id="regSN" placeholder="Full School Name" class="w-full p-4 border rounded-2xl bg-emerald-50"></div>
+                    <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold mt-2">Create Account</button>
                     <button type="button" onclick="toggleAuth('login')" class="w-full text-slate-500 text-sm mt-2">Back to Login</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <nav id="sidebar" class="hidden w-64 bg-slate-900 text-white flex flex-col p-6 h-screen">
-        <h1 class="font-bold text-xl mb-10 text-blue-400">LANKA TEACHER</h1>
-        <div class="flex-1 space-y-2" id="nav-links">
-            <button onclick="showTab('dash')" class="w-full flex items-center gap-3 p-3 rounded-xl bg-blue-600"><i data-lucide="home"></i>Dashboard</button>
+    <nav id="sidebar" class="hidden w-72 bg-slate-900 text-white flex flex-col p-6 h-full shadow-2xl">
+        <div class="flex items-center space-x-3 mb-12 px-2">
+            <div class="p-2 bg-blue-600 rounded-lg"><i data-lucide="graduation-cap"></i></div>
+            <span class="font-bold text-xl tracking-tight uppercase">LankaTeacher</span>
         </div>
-        <button onclick="logout()" class="text-rose-400 flex items-center gap-2 mt-auto"><i data-lucide="log-out"></i>Logout</button>
+        
+        <div class="flex-1 space-y-2" id="nav-container">
+            <button onclick="showTab('dash')" id="nav-dash" class="nav-btn w-full flex items-center gap-3 p-4 rounded-2xl nav-active"><i data-lucide="layout-grid"></i>Dashboard</button>
+            <button onclick="showTab('apply')" id="nav-apply" class="nav-btn teacher-only w-full flex items-center gap-3 p-4 rounded-2xl text-slate-400 hover:bg-slate-800"><i data-lucide="file-plus"></i>Apply Leave</button>
+            <button onclick="showTab('approvals')" id="nav-approvals" class="nav-btn principal-only w-full flex items-center gap-3 p-4 rounded-2xl text-slate-400 hover:bg-slate-800 hidden"><i data-lucide="check-square"></i>Approvals</button>
+            <button onclick="showTab('management')" id="nav-manage" class="nav-btn principal-only w-full flex items-center gap-3 p-4 rounded-2xl text-slate-400 hover:bg-slate-800 hidden"><i data-lucide="users-round"></i>Management</button>
+        </div>
+
+        <div class="mt-auto pt-6 border-t border-slate-800">
+            <p id="u-name" class="font-bold text-sm truncate px-2">User Name</p>
+            <p id="u-school" class="text-[10px] text-slate-500 uppercase font-bold truncate px-2 mb-4">School Name</p>
+            <button onclick="logout()" class="w-full flex items-center gap-3 p-4 rounded-2xl text-rose-400 hover:bg-rose-500/10"><i data-lucide="log-out"></i>Logout</button>
+        </div>
     </nav>
 
-    <main id="main-ui" class="hidden flex-1 p-8 bg-slate-50 overflow-y-auto">
-        <div id="tab-dash" class="tab-content">
-            <h1 class="text-2xl font-bold mb-4">Hello, <span id="display-name">User</span></h1>
-            <div id="data-container" class="grid gap-4">
-                <p class="text-slate-400">No leave history found.</p>
+    <main id="main-ui" class="hidden flex-1 p-10 overflow-y-auto bg-[#f8fafc]">
+        
+        <div id="tab-dash" class="tab-content space-y-8">
+            <h1 class="text-3xl font-bold text-slate-800">School Dashboard</h1>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-card p-6">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total Staff</p>
+                    <h3 class="text-3xl font-bold text-slate-800" id="stat-staff">0</h3>
+                </div>
+                <div class="glass-card p-6 border-l-4 border-amber-400">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-2">Pending Requests</p>
+                    <h3 class="text-3xl font-bold text-slate-800" id="stat-pending">0</h3>
+                </div>
+            </div>
+            <div class="glass-card overflow-hidden">
+                <div class="p-6 border-b"><h2 class="font-bold text-slate-800">Recent Applications</h2></div>
+                <table class="w-full text-left"><thead class="bg-slate-50"><tr class="text-[11px] text-slate-400 font-bold uppercase"><th class="p-4">Staff</th><th class="p-4">Type</th><th class="p-4">Date</th><th class="p-4">Status</th></tr></thead><tbody id="dash-table-body"></tbody></table>
+            </div>
+        </div>
+
+        <div id="tab-management" class="tab-content hidden space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <h1 class="text-2xl font-bold text-slate-800">Staff Management</h1>
+                <div class="relative w-full md:w-80">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" id="staffSearch" onkeyup="filterStaff()" placeholder="Search teachers by name..." class="w-full pl-11 p-3 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                </div>
+            </div>
+            
+            <div class="glass-card overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 border-b"><tr class="text-[11px] text-slate-400 font-bold uppercase"><th class="p-4">Name</th><th class="p-4">Role</th><th class="p-4">Status</th></tr></thead>
+                    <tbody id="staff-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-approvals" class="tab-content hidden space-y-6">
+            <h1 class="text-2xl font-bold text-slate-800">Pending Approvals</h1>
+            <div id="approval-queue" class="grid gap-4"></div>
+        </div>
+
+        <div id="tab-apply" class="tab-content hidden max-w-xl mx-auto">
+            <div class="glass-card p-10 shadow-sm border-t-8 border-blue-600">
+                <h2 class="text-xl font-bold mb-6">Leave Request</h2>
+                <form id="leaveForm" class="space-y-4">
+                    <input type="date" id="lvDate" required class="w-full p-4 border rounded-2xl">
+                    <input type="number" id="lvDays" value="1" min="1" class="w-full p-4 border rounded-2xl">
+                    <select id="lvType" class="w-full p-4 border rounded-2xl"><option>Casual</option><option>Medical</option><option>Duty</option></select>
+                    <textarea id="lvReason" placeholder="Reason..." class="w-full p-4 border rounded-2xl h-24"></textarea>
+                    <button class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">Submit</button>
+                </form>
             </div>
         </div>
     </main>
 
     <script>
-        // --- CONFIGURATION ---
         const SUPABASE_URL = "https://wlzzepbqdeotluxkrthd.supabase.co"; 
         const SUPABASE_KEY = "sb_publishable_61_5jXI4eiFLGbS6MXLPRA_lNFgmCbt"; 
-        
-        // Initialize Client with a different variable name to avoid library conflict
-        const _client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const _db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let userRole = 'teacher';
+        let activeProfile = null;
+        let allStaffList = [];
 
-        // --- AUTH UI HELPERS ---
-        function toggleAuth(type) {
-            document.getElementById('login-box').classList.toggle('hidden', type === 'reg');
-            document.getElementById('register-box').classList.toggle('hidden', type === 'login');
+        // --- AUTH & LOGOUT ---
+        function toggleAuth(t) {
+            document.getElementById('login-box').classList.toggle('hidden', t === 'reg');
+            document.getElementById('register-box').classList.toggle('hidden', t === 'login');
         }
 
-        function setRole(role) {
-            userRole = role;
-            document.getElementById('btn-t').className = role === 'teacher' ? 'flex-1 py-2 rounded-lg font-bold text-sm bg-white shadow-sm' : 'flex-1 py-2 rounded-lg font-bold text-sm text-slate-500';
-            document.getElementById('btn-p').className = role === 'principal' ? 'flex-1 py-2 rounded-lg font-bold text-sm bg-white shadow-sm' : 'flex-1 py-2 rounded-lg font-bold text-sm text-slate-500';
-            document.getElementById('school-code-input').classList.toggle('hidden', role === 'principal');
-            document.getElementById('school-name-input').classList.toggle('hidden', role === 'teacher');
+        function setRole(r) {
+            document.getElementById('btn-t').className = r === 'teacher' ? 'flex-1 py-2 rounded-xl font-bold text-sm bg-white shadow-sm' : 'flex-1 py-2 rounded-xl font-bold text-sm text-slate-500';
+            document.getElementById('btn-p').className = r === 'principal' ? 'flex-1 py-2 rounded-xl font-bold text-sm bg-white shadow-sm' : 'flex-1 py-2 rounded-xl font-bold text-sm text-slate-500';
+            document.getElementById('sc-input').classList.toggle('hidden', r === 'principal');
+            document.getElementById('sn-input').classList.toggle('hidden', r === 'teacher');
+            window.selectedRole = r;
         }
 
-        function setLoading(show) { document.getElementById('loader').classList.toggle('hidden', !show); }
-
-        // --- REGISTRATION LOGIC ---
-        document.getElementById('regForm').onsubmit = async (e) => {
-            e.preventDefault();
+        async function logout() {
             setLoading(true);
+            await _db.auth.signOut();
+            window.location.replace(window.location.href.split('#')[0]);
+        }
 
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPass').value;
-            const fullName = document.getElementById('regName').value;
-            const schoolName = document.getElementById('regSN').value;
-            const schoolCode = userRole === 'principal' ? 'SCH-' + Math.floor(1000 + Math.random() * 9000) : document.getElementById('regSC').value;
-
-            try {
-                // 1. Create User in Auth
-                const { data: authData, error: authError } = await _client.auth.signUp({ email, password });
-                
-                if (authError) throw authError;
-
-                if (authData.user) {
-                    // 2. Create Profile in 'profiles' table
-                    const { error: profileError } = await _client.from('profiles').insert([{
-                        id: authData.user.id,
-                        full_name: fullName,
-                        role: userRole,
-                        school_name: schoolName || 'Staff',
-                        school_code: schoolCode
-                    }]);
-
-                    if (profileError) throw profileError;
-
-                    alert(`Registration Successful!\n${userRole === 'principal' ? 'Your School Code is: ' + schoolCode : 'Welcome to the portal!'}`);
-                    location.reload();
-                }
-            } catch (err) {
-                console.error(err);
-                alert("Error: " + err.message);
-            } finally {
-                setLoading(false);
+        // --- CORE LOGIC ---
+        async function checkSession() {
+            const { data: { session } } = await _db.auth.getSession();
+            if (session) {
+                const { data } = await _db.from('profiles').select('*').eq('id', session.user.id).single();
+                activeProfile = data;
+                renderUI();
             }
-        };
+        }
 
-        // --- LOGIN LOGIC ---
+        function renderUI() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('sidebar').classList.remove('hidden');
+            document.getElementById('main-ui').classList.remove('hidden');
+            document.getElementById('u-name').innerText = activeProfile.full_name;
+            document.getElementById('u-school').innerText = activeProfile.school_name;
+            
+            if(activeProfile.role === 'principal') {
+                document.querySelectorAll('.principal-only').forEach(e => e.classList.remove('hidden'));
+                document.querySelectorAll('.teacher-only').forEach(e => e.classList.add('hidden'));
+            }
+            refreshData();
+        }
+
+        async function refreshData() {
+            const { data: staff } = await _db.from('profiles').select('*').eq('school_code', activeProfile.school_code);
+            allStaffList = staff;
+            document.getElementById('stat-staff').innerText = staff.length;
+            renderStaffTable(staff);
+
+            const { data: leaves } = await _db.from('leaves').select('*').eq('school_code', activeProfile.school_code).order('created_at', { ascending: false });
+            
+            // Dashboard Table
+            document.getElementById('dash-table-body').innerHTML = leaves.slice(0, 10).map(l => `
+                <tr class="border-b text-sm">
+                    <td class="p-4 font-medium">${l.user_name}</td>
+                    <td class="p-4">${l.type}</td>
+                    <td class="p-4 text-slate-500">${l.start_date}</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded-full text-[10px] font-bold status-pill-${l.status.toLowerCase()}">${l.status}</span></td>
+                </tr>`).join('');
+
+            // Approvals Queue
+            const pending = leaves.filter(l => l.status === 'Pending');
+            document.getElementById('stat-pending').innerText = pending.length;
+            document.getElementById('approval-queue').innerHTML = pending.map(l => `
+                <div class="glass-card p-6 flex justify-between items-center shadow-sm">
+                    <div>
+                        <p class="font-bold text-slate-800">${l.user_name}</p>
+                        <p class="text-xs text-slate-500">${l.type} | ${l.start_date} | ${l.duration} Days</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="updStatus('${l.id}', 'Approved')" class="p-3 bg-emerald-500 text-white rounded-xl"><i data-lucide="check"></i></button>
+                        <button onclick="updStatus('${l.id}', 'Rejected')" class="p-3 bg-rose-500 text-white rounded-xl"><i data-lucide="x"></i></button>
+                    </div>
+                </div>`).join('');
+            lucide.createIcons();
+        }
+
+        // --- SEARCH ENGINE ---
+        function filterStaff() {
+            const term = document.getElementById('staffSearch').value.toLowerCase();
+            const filtered = allStaffList.filter(s => s.full_name.toLowerCase().includes(term));
+            renderStaffTable(filtered);
+        }
+
+        function renderStaffTable(data) {
+            document.getElementById('staff-table-body').innerHTML = data.map(s => `
+                <tr class="border-b hover:bg-slate-50 transition-colors">
+                    <td class="p-4 font-bold text-slate-700">${s.full_name}</td>
+                    <td class="p-4 text-xs font-bold uppercase text-slate-400">${s.role}</td>
+                    <td class="p-4"><span class="w-2 h-2 rounded-full bg-emerald-400 inline-block mr-2"></span>Active</td>
+                </tr>`).join('');
+        }
+
+        // --- DATABASE ACTIONS ---
+        async function updStatus(id, status) {
+            setLoading(true);
+            await _db.from('leaves').update({ status }).eq('id', id);
+            refreshData();
+            setLoading(false);
+        }
+
         document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
             setLoading(true);
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            const { data, error } = await _client.auth.signInWithPassword({ email, password });
-            
-            if (error) {
-                alert("Login Failed: " + error.message);
-                setLoading(false);
-            } else {
-                checkUser();
-            }
+            const { error } = await _db.auth.signInWithPassword({ email: document.getElementById('email').value, password: document.getElementById('password').value });
+            if(error) alert(error.message); else checkSession();
+            setLoading(false);
         };
 
-        async function checkUser() {
-            const { data: { session } } = await _client.auth.getSession();
-            if (session) {
-                const { data: profile } = await _client.from('profiles').select('*').eq('id', session.user.id).single();
-                if (profile) {
-                    document.getElementById('auth-screen').classList.add('hidden');
-                    document.getElementById('sidebar').classList.remove('hidden');
-                    document.getElementById('main-ui').classList.remove('hidden');
-                    document.getElementById('display-name').innerText = profile.full_name;
-                    setLoading(false);
-                }
-            }
+        document.getElementById('regForm').onsubmit = async (e) => {
+            e.preventDefault();
+            setLoading(true);
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPass').value;
+            const fullName = document.getElementById('regName').value;
+            const sCode = window.selectedRole === 'principal' ? 'SL-' + Math.floor(1000 + Math.random()*9000) : document.getElementById('regSC').value;
+
+            const { data: auth, error: aErr } = await _db.auth.signUp({ email, password });
+            if(aErr) { alert(aErr.message); setLoading(false); return; }
+            await _db.from('profiles').insert([{ id: auth.user.id, full_name: fullName, role: window.selectedRole, school_name: document.getElementById('regSN').value || 'Staff', school_code: sCode }]);
+            alert("Success! Code: " + sCode);
+            location.reload();
+        };
+
+        function showTab(t) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + t).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active', 'text-white'));
+            document.getElementById('nav-' + (t === 'management' ? 'manage' : t)).classList.add('nav-active', 'text-white');
+            lucide.createIcons();
         }
 
-        function logout() { _client.auth.signOut(); location.reload(); }
-
-        window.onload = () => { checkUser(); lucide.createIcons(); };
+        function setLoading(s) { document.getElementById('loader').classList.toggle('hidden', !s); }
+        window.onload = () => { setRole('teacher'); checkSession(); lucide.createIcons(); };
     </script>
 </body>
 </html>
