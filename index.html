@@ -3,387 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GuruNiwadu | Glass Edition</title>
+    <title>LankaTeacher Pro | Unified Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        :root {
-            --glass: rgba(255, 255, 255, 0.2);
-            --glass-border: rgba(255, 255, 255, 0.3);
-            --text: #ffffff;
-            --primary: #6366f1;
-            --accent: #22d3ee;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
-            background-attachment: fixed;
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
-
-        /* --- Glassmorphism Components --- */
-        .glass-card {
-            background: var(--glass);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-
-        .container { width: 95%; max-width: 1100px; margin: 2rem auto; }
-
-        /* --- Auth View --- */
-        #view-auth {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .auth-box { width: 100%; max-width: 450px; padding: 2.5rem; }
-
-        /* --- UI Elements --- */
-        input, select, textarea {
-            width: 100%;
-            padding: 14px;
-            margin: 10px 0;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            color: white;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input:focus { border-color: var(--accent); background: rgba(255, 255, 255, 0.15); }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(45deg, var(--primary), var(--accent));
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4); }
-
-        /* --- Tables --- */
-        .table-container { overflow-x: auto; margin-top: 1.5rem; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 15px; background: rgba(0,0,0,0.2); font-size: 0.8rem; text-transform: uppercase; }
-        td { padding: 15px; border-bottom: 1px solid var(--glass-border); }
-
-        /* --- Navigation --- */
-        header {
-            padding: 1rem 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--glass-border);
-            margin-bottom: 2rem;
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        .tab-active { background: #0f172a; color: white !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         .hidden { display: none !important; }
-
-        .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
-        .Pending { background: #facc15; color: #000; }
-        .Approved { background: #4ade80; color: #000; }
-        .Rejected { background: #f87171; color: #fff; }
-
-        .role-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
-        .role-opt { flex: 1; text-align: center; padding: 10px; border: 1px solid var(--glass-border); border-radius: 10px; cursor: pointer; }
-        .role-opt.active { background: var(--primary); border-color: var(--primary); }
-
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex items-center justify-center p-4">
 
-    <div id="view-auth">
-        <div class="glass-card auth-box">
-            <div style="text-align: center; margin-bottom: 2rem;">
-                <h1 style="font-size: 2rem; letter-spacing: -1px;">GURU<span style="color:var(--accent)">NIWADU</span></h1>
-                <p style="opacity: 0.7; font-size: 0.9rem;">Education Management System</p>
-            </div>
-
-            <div id="auth-forms">
-                <div id="login-form">
-                    <input type="email" id="login-email" placeholder="Email Address">
-                    <input type="password" id="login-pass" placeholder="Password">
-                    <button id="btn-login"><i class="fas fa-sign-in-alt"></i> Sign In</button>
-                    <p style="text-align: center; margin-top: 20px; font-size: 0.85rem;">
-                        New here? <a href="#" onclick="toggleAuth(true)" style="color:var(--accent)">Register School/Staff</a>
-                    </p>
-                </div>
-
-                <div id="reg-form" class="hidden">
-                    <div class="role-toggle">
-                        <div class="role-opt active" id="opt-teacher">Teacher</div>
-                        <div class="role-opt" id="opt-principal">Principal</div>
-                    </div>
-                    <input type="text" id="reg-name" placeholder="Full Name">
-                    <input type="email" id="reg-email" placeholder="Email Address">
-                    <input type="password" id="reg-pass" placeholder="Password (6+ chars)">
-                    <select id="reg-school-list">
-                        <option value="">Select School...</option>
-                    </select>
-                    <button id="btn-register">Create Account</button>
-                    <p style="text-align: center; margin-top: 20px; font-size: 0.85rem;">
-                        Already have an account? <a href="#" onclick="toggleAuth(false)" style="color:var(--accent)">Login</a>
-                    </p>
-                </div>
-            </div>
-        </div>
+    <div id="loader" class="hidden fixed inset-0 z-[200] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center">
+        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-4 font-black text-blue-600 tracking-widest text-[10px]">VERIFYING CREDENTIALS</p>
     </div>
 
-    <div id="view-app" class="hidden">
-        <header class="glass-card" style="border-radius: 0 0 20px 20px; border-top:none;">
-            <div style="font-weight: 800; font-size: 1.2rem;"><i class="fas fa-feather-alt" style="color:var(--accent)"></i> GURU</div>
-            <div id="user-profile" style="font-size: 0.9rem;">
-                <span id="display-name">User</span> | <a href="#" id="btn-logout" style="color:var(--accent)">Logout</a>
-            </div>
-        </header>
+    <section id="auth-ui" class="w-full max-w-[420px] fade-in">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-black text-slate-900 tracking-tighter italic">LankaTeacher<span class="text-blue-600">Pro</span></h1>
+            <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Institution OS v2.1</p>
+        </div>
 
-        <div class="container">
-            <div id="panel-teacher" class="hidden">
-                <div class="grid" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;">
-                    <div class="glass-card" style="padding: 2rem;">
-                        <h3>New Leave Application</h3>
-                        <label style="font-size: 0.8rem; opacity: 0.7;">Type</label>
-                        <select id="leave-type"><option>Casual</option><option>Medical</option><option>Duty</option></select>
-                        <label style="font-size: 0.8rem; opacity: 0.7;">Start Date</label>
-                        <input type="date" id="leave-date">
-                        <input type="number" id="leave-days" placeholder="Days" value="1">
-                        <textarea id="leave-reason" placeholder="Reason for leave..."></textarea>
-                        <button id="btn-submit-leave">Submit Application</button>
-                    </div>
-                    <div class="glass-card" style="padding: 2rem;">
-                        <h3>My History</h3>
-                        <div class="table-container">
-                            <table id="table-teacher">
-                                <thead><tr><th>Date</th><th>Type</th><th>Status</th></tr></thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
+        <div class="glass p-8 rounded-[2.5rem] shadow-2xl">
+            <div class="flex bg-slate-200/50 p-1.5 rounded-2xl mb-8">
+                <button onclick="setRole('teacher')" id="tab-teacher" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tab-active transition-all">Teacher</button>
+                <button onclick="setRole('principal')" id="tab-principal" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase text-slate-500 transition-all">Principal</button>
+                <button onclick="setRole('admin')" id="tab-admin" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase text-slate-500 transition-all">Admin</button>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div class="space-y-4">
+                    <input type="email" id="email" placeholder="Email Address" required class="w-full p-4 bg-white/50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 transition-all">
+                    <input type="password" id="password" placeholder="Password" required class="w-full p-4 bg-white/50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 transition-all">
+                </div>
+                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-slate-800 active:scale-95 transition-all mt-2">
+                    Enter Portal
+                </button>
+            </form>
+
+            <div id="reg-trigger" class="mt-8 text-center">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter">New Teacher? 
+                    <button onclick="toggleModal('reg', true)" class="text-blue-600 hover:underline">Register Account</button>
+                </p>
+            </div>
+        </div>
+        <p class="text-center mt-10 text-[9px] font-bold text-slate-400 uppercase tracking-widest">© 2026 Developed by K.A.V.Rashmika</p>
+    </section>
+
+    <div id="dashboard-ui" class="hidden fixed inset-0 flex flex-col md:flex-row p-4 md:p-6 gap-6 fade-in">
+        <aside class="glass w-full md:w-80 rounded-[2.5rem] p-8 flex flex-col shadow-xl">
+            <div class="flex items-center gap-4 mb-10">
+                <div class="bg-blue-600 p-3 rounded-2xl text-white shadow-lg shadow-blue-600/20"><i data-lucide="layout-grid"></i></div>
+                <div>
+                    <h2 id="display-name" class="font-bold text-slate-800 leading-tight">User</h2>
+                    <span id="display-role" class="text-[9px] font-black text-blue-600 uppercase tracking-[0.2em]">Role</span>
                 </div>
             </div>
 
-            <div id="panel-principal" class="hidden">
-                <div class="glass-card" style="padding: 2rem;">
-                    <h2>Review Staff Applications</h2>
-                    <div class="table-container">
-                        <table id="table-principal">
-                            <thead><tr><th>Teacher</th><th>Date</th><th>Reason</th><th>Action</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            <nav id="sidebar-nav" class="flex-1 space-y-2">
+                </nav>
 
-            <div id="panel-superadmin" class="hidden">
-                <div class="glass-card" style="padding: 2rem;">
-                    <h2>System Management</h2>
-                    <div style="display: flex; gap: 10px; margin: 20px 0;">
-                        <input type="text" id="admin-school-name" placeholder="New School Name">
-                        <button id="btn-add-school" style="width: 200px;">Add School</button>
-                    </div>
-                    <div class="table-container">
-                        <table id="table-admin">
-                            <thead><tr><th>School Name</th><th>Teachers</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
+            <button onclick="logout()" class="mt-auto p-4 bg-rose-50 text-rose-600 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-rose-600 hover:text-white transition-all">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+            </button>
+        </aside>
+
+        <main class="flex-1 glass rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col">
+            <header class="p-8 border-b border-white flex justify-between items-center">
+                <h2 id="view-title" class="text-2xl font-black text-slate-800 tracking-tighter uppercase">Overview</h2>
+                <div id="header-actions"></div>
+            </header>
+            <div id="view-content" class="flex-1 overflow-y-auto p-8">
                 </div>
-            </div>
+        </main>
+    </div>
+
+    <div id="modal-reg" class="hidden fixed inset-0 z-[300] bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl">
+            <h3 class="text-2xl font-black text-slate-800 mb-2">Teacher Join</h3>
+            <p class="text-slate-500 text-sm mb-8">Register your institutional profile.</p>
+            
+            <form onsubmit="handleRegistration(event)" class="space-y-4">
+                <input type="text" id="regName" placeholder="Full Name" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-blue-500">
+                <input type="email" id="regEmail" placeholder="Email Address" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-blue-500">
+                <input type="password" id="regPass" placeholder="Password" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-blue-500">
+                <input type="text" id="regCode" placeholder="School Code (e.g. ADMIN-HQ)" required class="w-full p-4 bg-blue-50 border-blue-100 text-blue-800 rounded-2xl outline-none font-bold">
+                
+                <div class="flex gap-4 pt-6">
+                    <button type="button" onclick="toggleModal('reg', false)" class="flex-1 font-bold text-slate-400">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg">Register</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
-        // --- 1. CONFIGURATION ---
-        const SUPABASE_URL = "https://fvwtrzwqpukojqgcseiq.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_Yq4ClmL2Mk4bZrrEQzdgtQ_lP9YI4-M";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // --- CONFIGURATION ---
+        const SB_URL = "https://wlzzepbqdeotluxkrthd.supabase.co"; 
+        const SB_KEY = "sb_publishable_61_5jXI4eiFLGbS6MXLPRA_lNFgmCbt"; 
+        const _db = supabase.createClient(SB_URL, SB_KEY);
 
+        let activeRole = 'teacher';
         let userProfile = null;
-        let selectedRole = 'teacher';
 
-        // --- 2. INITIALIZATION & VIEW CONTROLLER ---
-        async function init() {
-            setupEventListeners();
-            loadSchools();
-            checkSession();
+        // --- AUTH & PROFILE LOGIC ---
+        function setRole(role) {
+            activeRole = role;
+            document.querySelectorAll('#auth-ui button[id^="tab-"]').forEach(btn => btn.classList.remove('tab-active', 'text-slate-500'));
+            document.getElementById('tab-'+role).classList.add('tab-active');
+            document.getElementById('reg-trigger').classList.toggle('hidden', role !== 'teacher');
         }
 
-        function showView(viewId) {
-            document.getElementById('view-auth').classList.add('hidden');
-            document.getElementById('view-app').classList.add('hidden');
-            document.getElementById(viewId).classList.remove('hidden');
-        }
-
-        function toggleAuth(isReg) {
-            document.getElementById('login-form').classList.toggle('hidden', isReg);
-            document.getElementById('reg-form').classList.toggle('hidden', !isReg);
-        }
-
-        // --- 3. EVENT LISTENERS (FIXED) ---
-        function setupEventListeners() {
-            // Role Toggles
-            document.getElementById('opt-teacher').addEventListener('click', () => {
-                selectedRole = 'teacher';
-                document.getElementById('opt-teacher').classList.add('active');
-                document.getElementById('opt-principal').classList.remove('active');
-            });
-            document.getElementById('opt-principal').addEventListener('click', () => {
-                selectedRole = 'principal';
-                document.getElementById('opt-principal').classList.add('active');
-                document.getElementById('opt-teacher').classList.remove('active');
-            });
-
-            // Auth Buttons
-            document.getElementById('btn-login').addEventListener('click', handleLogin);
-            document.getElementById('btn-register').addEventListener('click', handleRegister);
-            document.getElementById('btn-logout').addEventListener('click', handleLogout);
-
-            // Functional Buttons
-            document.getElementById('btn-submit-leave').addEventListener('click', submitLeaveRequest);
-            document.getElementById('btn-add-school').addEventListener('click', addSchool);
-        }
-
-        // --- 4. CORE FUNCTIONS ---
-        async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await supabase.from('profiles').select('*, schools(*)').eq('id', session.user.id).single();
-                userProfile = profile;
-                renderDashboard();
-            } else {
-                showView('view-auth');
-            }
-        }
-
-        async function handleLogin() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
-            if (error) alert(error.message);
-            else checkSession();
-        }
-
-        async function handleRegister() {
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-pass').value;
-            const name = document.getElementById('reg-name').value;
-            const schoolId = document.getElementById('reg-school-list').value;
-
-            if(!schoolId || !name) return alert("Please fill all info");
-
-            const { error } = await supabase.auth.signUp({
-                email, password: pass,
-                options: { data: { full_name: name, role: selectedRole, school_id: schoolId } }
-            });
-
-            if (error) alert(error.message);
-            else alert("Account Created! You can now login.");
-        }
-
-        async function renderDashboard() {
-            showView('view-app');
-            document.getElementById('display-name').innerText = userProfile.full_name;
+        async function handleLogin(e) {
+            e.preventDefault();
+            setLoading(true);
             
-            // Hide all panels
-            ['panel-teacher', 'panel-principal', 'panel-superadmin'].forEach(p => document.getElementById(p).classList.add('hidden'));
+            const { data: auth, error: aErr } = await _db.auth.signInWithPassword({
+                email: e.target.email.value,
+                password: e.target.password.value
+            });
 
-            if (userProfile.role === 'superadmin') {
-                document.getElementById('panel-superadmin').classList.remove('hidden');
-                loadAdminData();
-            } else if (userProfile.role === 'principal') {
-                document.getElementById('panel-principal').classList.remove('hidden');
-                loadPrincipalRequests();
+            if(aErr) { alert("Login Error: " + aErr.message); setLoading(false); return; }
+
+            // 1. Fetch Profile
+            let { data: profile, error: pErr } = await _db.from('profiles').select('*').eq('id', auth.user.id).single();
+            
+            // 2. SELF-HEALING: If account exists in Auth but not in Profiles
+            if(!profile) {
+                console.log("Auto-creating missing profile for " + activeRole);
+                const { data: newP, error: cErr } = await _db.from('profiles').insert([{
+                    id: auth.user.id,
+                    full_name: auth.user.email.split('@')[0],
+                    role: activeRole,
+                    school_code: 'ADMIN-HQ'
+                }]).select().single();
+                
+                if(cErr) { 
+                    alert("Database Error: Could not create profile. Check SQL RLS Policies."); 
+                    await _db.auth.signOut();
+                    setLoading(false);
+                    return; 
+                }
+                profile = newP;
+            }
+
+            // 3. Role Enforcement
+            if(profile.role !== activeRole) {
+                alert(`Role Mismatch: This portal is for ${activeRole}s. Your account is ${profile.role}.`);
+                await _db.auth.signOut();
+                setLoading(false);
             } else {
-                document.getElementById('panel-teacher').classList.remove('hidden');
-                loadTeacherHistory();
+                userProfile = profile;
+                renderApp();
             }
         }
 
-        // --- 5. DATA FETCHING ---
-        async function loadSchools() {
-            const { data } = await supabase.from('schools').select('*');
-            const list = document.getElementById('reg-school-list');
-            list.innerHTML = '<option value="">Select School...</option>' + 
-                data.map(s => `<option value="${s.id}">${s.school_name}</option>`).join('');
+        async function handleRegistration(e) {
+            e.preventDefault();
+            setLoading(true);
+
+            // Create Auth
+            const { data: auth, error: aErr } = await _db.auth.signUp({
+                email: e.target.regEmail.value,
+                password: e.target.regPass.value
+            });
+
+            if(aErr) { alert(aErr.message); setLoading(false); return; }
+
+            // Create Profile (Teacher Registration)
+            const { error: pErr } = await _db.from('profiles').insert([{
+                id: auth.user.id,
+                full_name: e.target.regName.value,
+                role: 'teacher',
+                school_code: e.target.regCode.value
+            }]);
+
+            if(pErr) {
+                alert("Database Error: Profile creation failed. Check School Code.");
+            } else {
+                alert("Registration Complete! Please log in.");
+                toggleModal('reg', false);
+            }
+            setLoading(false);
         }
 
-        async function submitLeaveRequest() {
-            const payload = {
-                teacher_id: userProfile.id,
-                school_id: userProfile.school_id,
-                leave_type: document.getElementById('leave-type').value,
-                start_date: document.getElementById('leave-date').value,
-                days: document.getElementById('leave-days').value,
-                reason: document.getElementById('leave-reason').value
+        // --- DASHBOARD RENDERING ---
+        function renderApp() {
+            setLoading(true);
+            document.getElementById('auth-ui').classList.add('hidden');
+            document.getElementById('dashboard-ui').classList.remove('hidden');
+            document.getElementById('display-name').innerText = userProfile.full_name;
+            document.getElementById('display-role').innerText = userProfile.role;
+            
+            const nav = document.getElementById('sidebar-nav');
+            nav.innerHTML = '';
+
+            const roles = {
+                admin: [
+                    { label: 'Schools', icon: 'school', view: 'admin-schools' },
+                    { label: 'System Logs', icon: 'activity', view: 'admin-logs' }
+                ],
+                principal: [
+                    { label: 'Teacher Leaves', icon: 'clipboard-list', view: 'prin-leaves' },
+                    { label: 'Staff Directory', icon: 'users', view: 'prin-staff' }
+                ],
+                teacher: [
+                    { label: 'My Leaves', icon: 'send', view: 'teach-apply' },
+                    { label: 'History', icon: 'clock', view: 'teach-history' }
+                ]
             };
-            await supabase.from('leave_requests').insert([payload]);
-            alert("Applied successfully!");
-            loadTeacherHistory();
+
+            roles[userProfile.role].forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = "w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-white/50 font-bold text-sm text-slate-600 transition-all";
+                btn.innerHTML = `<i data-lucide="${item.icon}" class="w-4 h-4"></i> ${item.label}`;
+                btn.onclick = () => loadView(item.view);
+                nav.appendChild(btn);
+            });
+
+            loadView(roles[userProfile.role][0].view);
+            lucide.createIcons();
+            setLoading(false);
         }
 
-        async function loadTeacherHistory() {
-            const { data } = await supabase.from('leave_requests').select('*').eq('teacher_id', userProfile.id).order('created_at', {ascending:false});
-            const tbody = document.querySelector('#table-teacher tbody');
-            tbody.innerHTML = data.map(r => `<tr><td>${r.start_date}</td><td>${r.leave_type}</td><td><span class="badge ${r.status}">${r.status}</span></td></tr>`).join('');
+        function loadView(view) {
+            const content = document.getElementById('view-content');
+            const title = document.getElementById('view-title');
+            title.innerText = view.replace('-', ' ');
+            
+            content.innerHTML = `
+                <div class="p-10 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center text-slate-400">
+                    <i data-lucide="construction" class="w-10 h-10 mb-4"></i>
+                    <p class="font-bold uppercase tracking-widest text-[10px]">Interface Ready</p>
+                    <p class="text-xs mt-2 text-slate-400">Loading data for ${view}...</p>
+                </div>
+            `;
+            lucide.createIcons();
         }
 
-        async function loadPrincipalRequests() {
-            const { data } = await supabase.from('leave_requests').select('*, profiles(full_name)').eq('school_id', userProfile.school_id).eq('status', 'Pending');
-            const tbody = document.querySelector('#table-principal tbody');
-            tbody.innerHTML = data.map(r => `
-                <tr>
-                    <td>${r.profiles.full_name}</td>
-                    <td>${r.start_date} (${r.days}d)</td>
-                    <td>${r.reason}</td>
-                    <td>
-                        <button onclick="decide('${r.id}', 'Approved')" style="padding:5px; background:green; width:40px;"><i class="fas fa-check"></i></button>
-                        <button onclick="decide('${r.id}', 'Rejected')" style="padding:5px; background:red; width:40px;"><i class="fas fa-times"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        async function decide(id, status) {
-            await supabase.from('leave_requests').update({ status }).eq('id', id);
-            loadPrincipalRequests();
-        }
-
-        async function addSchool() {
-            const name = document.getElementById('admin-school-name').value;
-            await supabase.from('schools').insert([{ school_name: name }]);
-            location.reload();
-        }
-
-        async function handleLogout() {
-            await supabase.auth.signOut();
-            location.reload();
-        }
-
-        // Start App
-        init();
+        // --- HELPERS ---
+        function setLoading(s) { document.getElementById('loader').classList.toggle('hidden', !s); }
+        function toggleModal(id, show) { document.getElementById('modal-'+id).classList.toggle('hidden', !show); }
+        async function logout() { await _db.auth.signOut(); location.reload(); }
+        window.onload = () => lucide.createIcons();
     </script>
 </body>
 </html>
