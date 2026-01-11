@@ -3,117 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LankaTeacher Pro | 2026 Stable</title>
+    <title>LankaTeacher Pro | Unified Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid white; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        :root { --glass: rgba(255, 255, 255, 0.6); --glass-border: rgba(255, 255, 255, 0.4); }
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #f1f5f9;
+            background-image: radial-gradient(at 0% 0%, hsla(210,100%,93%,1) 0, transparent 50%), 
+                              radial-gradient(at 100% 100%, hsla(220,100%,90%,1) 0, transparent 50%);
+            min-height: 100vh;
+        }
+
+        .glass { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); }
         .tab-active { background: #0f172a; color: white !important; }
-        .hidden { display: none !important; }
+        .hide { display: none !important; }
+
+        /* Animation for smooth transitions */
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="flex flex-col items-center justify-center p-4">
 
-    <div id="loader" class="hidden fixed inset-0 z-[999] bg-white/90 flex flex-col items-center justify-center">
-        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p class="mt-4 font-bold text-blue-600 tracking-widest text-[10px]">STABILIZING CONNECTION...</p>
+    <div id="loader" class="hidden fixed inset-0 z-[100] bg-white/60 backdrop-blur-md flex flex-col items-center justify-center">
+        <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-4 text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">Secure Sync</p>
     </div>
 
-    <section id="auth-ui" class="w-full max-w-md">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-black text-slate-900 italic">LankaTeacher<span class="text-blue-600">Pro</span></h1>
-            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-2">Institution OS Stable v3.1</p>
+    <section id="auth-section" class="w-full max-w-[450px] fade-in">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-black text-slate-900 tracking-tighter">LankaTeacher <span class="text-blue-600">Pro</span></h1>
+            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Management OS v2.1</p>
         </div>
 
-        <div class="glass p-8 rounded-[2.5rem] shadow-2xl">
-            <div class="flex bg-slate-100 p-1 rounded-2xl mb-6">
-                <button onclick="setRole('teacher')" id="t-teacher" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tab-active">Teacher</button>
-                <button onclick="setRole('principal')" id="t-principal" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase text-slate-500">Principal</button>
-                <button onclick="setRole('admin')" id="t-admin" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase text-slate-500">Admin</button>
+        <div class="glass rounded-[2.5rem] p-8 shadow-2xl shadow-blue-500/5">
+            <div class="flex bg-slate-200/50 p-1.5 rounded-2xl mb-8">
+                <button onclick="setRole('teacher')" id="tab-teacher" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-wider tab-active transition-all">Teacher</button>
+                <button onclick="setRole('principal')" id="tab-principal" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-wider text-slate-500 transition-all">Principal</button>
+                <button onclick="setRole('admin')" id="tab-admin" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-wider text-slate-500 transition-all">Admin</button>
             </div>
 
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <input type="email" id="email" placeholder="Institutional Email" required class="w-full p-4 bg-white border border-slate-200 rounded-2xl outline-none">
-                <input type="password" id="password" placeholder="Password" required class="w-full p-4 bg-white border border-slate-200 rounded-2xl outline-none">
-                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl">Secure Login</button>
+            <form id="loginForm" class="space-y-4">
+                <input type="email" id="email" placeholder="Email Address" required class="w-full p-4 bg-white/50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 transition-all">
+                <input type="password" id="password" placeholder="Password" required class="w-full p-4 bg-white/50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 transition-all">
+                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-slate-800 transition-all">Enter Portal</button>
             </form>
+
+            <div id="reg-link" class="mt-6 text-center">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter">New Staff? 
+                    <button onclick="openModal('reg')" class="text-blue-600 hover:underline">Create Account</button>
+                </p>
+            </div>
         </div>
+        <p class="text-center mt-10 text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Developed by K.A.V.Rashmika</p>
     </section>
 
-    <div id="dashboard-ui" class="hidden fixed inset-0 flex p-6 bg-slate-50 gap-6">
-        <aside class="glass w-80 rounded-[2.5rem] p-8 flex flex-col shadow-2xl">
-            <h2 id="u-name" class="font-bold text-slate-800">User</h2>
-            <span id="u-role" class="text-[10px] font-black text-blue-600 uppercase">Role</span>
-            <nav id="nav" class="mt-10 flex-1 space-y-2"></nav>
-            <button onclick="logout()" class="p-4 bg-rose-50 text-rose-600 rounded-2xl font-bold text-sm">Logout</button>
-        </aside>
-        <main class="flex-1 glass rounded-[2.5rem] p-10" id="main"></main>
+    <div id="main-layout" class="hide fixed inset-0 flex flex-col md:flex-row p-4 md:p-6 gap-6">
+        
+        <nav class="glass w-full md:w-80 rounded-[2.5rem] p-8 flex flex-col">
+            <div class="flex items-center gap-3 mb-10">
+                <div id="role-icon" class="bg-blue-600 p-2 rounded-xl text-white"><i data-lucide="user"></i></div>
+                <div>
+                    <h2 id="user-display-name" class="font-bold text-slate-800 leading-none">Name</h2>
+                    <span id="user-display-role" class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Role</span>
+                </div>
+            </div>
+
+            <div id="nav-items" class="flex-1 space-y-2">
+                </div>
+
+            <button onclick="logout()" class="mt-auto flex items-center justify-center gap-3 p-4 bg-rose-500/10 text-rose-600 rounded-2xl font-bold hover:bg-rose-500 hover:text-white transition-all">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+            </button>
+        </nav>
+
+        <main class="flex-1 glass rounded-[2.5rem] overflow-hidden flex flex-col fade-in">
+            <header class="p-8 border-b border-white/40 flex justify-between items-center bg-white/20">
+                <h2 id="page-title" class="text-2xl font-black text-slate-800 uppercase tracking-tighter">Overview</h2>
+                <div id="header-actions"></div>
+            </header>
+            <div id="page-content" class="flex-1 overflow-y-auto p-8">
+                </div>
+        </main>
+    </div>
+
+    <div id="modal-container" class="hide fixed inset-0 z-[200] bg-slate-900/20 backdrop-blur-sm flex items-center justify-center p-4">
+        <div id="modal-reg" class="hide glass bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
+            <h3 class="text-2xl font-black mb-6">Teacher Registration</h3>
+            <form id="regForm" class="space-y-4">
+                <input type="text" id="regName" placeholder="Legal Full Name" required class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                <input type="email" id="regEmail" placeholder="Email" required class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                <input type="password" id="regPass" placeholder="Password" required class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                <input type="text" id="regCode" placeholder="School Access Code" required class="w-full p-4 bg-blue-50 border-blue-100 rounded-2xl outline-none">
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeModal()" class="flex-1 font-bold text-slate-400">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg">Sign Up</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="modal-school" class="hide glass bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
+            <h3 class="text-2xl font-black mb-6">New Institution</h3>
+            <form id="schoolForm" class="space-y-4">
+                <input type="text" id="schName" placeholder="School Name" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
+                <input type="text" id="schCode" placeholder="School Code" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
+                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold">Register School</button>
+            </form>
+        </div>
     </div>
 
     <script>
+        // CONFIG
         const SB_URL = "https://wlzzepbqdeotluxkrthd.supabase.co"; 
         const SB_KEY = "sb_publishable_61_5jXI4eiFLGbS6MXLPRA_lNFgmCbt"; 
         const _db = supabase.createClient(SB_URL, SB_KEY);
 
+        let currentUser = null;
         let activeRole = 'teacher';
 
-        function setRole(r) {
-            activeRole = r;
-            document.querySelectorAll('button[id^="t-"]').forEach(b => b.classList.remove('tab-active', 'text-slate-500'));
-            document.getElementById('t-'+r).classList.add('tab-active');
+        // 1. AUTH LOGIC
+        function setRole(role) {
+            activeRole = role;
+            document.querySelectorAll('#auth-section button').forEach(b => b.classList.remove('tab-active'));
+            document.getElementById('tab-'+role).classList.add('tab-active');
+            document.getElementById('reg-link').classList.toggle('hide', role !== 'teacher');
         }
 
-        async function handleLogin(e) {
+        document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
             setLoading(true);
-            const { data: auth, error: aErr } = await _db.auth.signInWithPassword({
-                email: e.target.email.value, password: e.target.password.value
+            const { data, error } = await _db.auth.signInWithPassword({
+                email: e.target.email.value,
+                password: e.target.password.value
             });
 
-            if(aErr) { alert("Login Failed: " + aErr.message); setLoading(false); return; }
+            if(error) { alert(error.message); setLoading(false); return; }
 
-            // 1. Check if profile exists
-            let { data: profile, error: pErr } = await _db.from('profiles').select('*').eq('id', auth.user.id).single();
+            const { data: profile } = await _db.from('profiles').select('*').eq('id', data.user.id).single();
             
-            // 2. If profile is missing (Fixes image_971bb3), try to create it
-            if(!profile) {
-                const { data: newP, error: cErr } = await _db.from('profiles').insert([{
-                    id: auth.user.id, full_name: auth.user.email.split('@')[0],
-                    role: activeRole, school_code: 'ADMIN-HQ'
-                }]).select().single();
-                
-                if(cErr) {
-                    alert("Database Link Error: " + cErr.message + ". Run the SQL Fix script in Supabase.");
-                    await _db.auth.signOut();
-                    setLoading(false);
-                    return;
-                }
-                profile = newP;
-            }
-
-            if(profile.role !== activeRole) {
-                alert(`Access Denied: You are ${profile.role}, not ${activeRole}.`);
+            if(!profile || profile.role !== activeRole) {
+                alert(`Access denied. This account is registered as: ${profile ? profile.role : 'unknown'}`);
                 await _db.auth.signOut();
+                setLoading(false);
             } else {
-                renderApp(profile);
+                currentUser = profile;
+                renderApp();
             }
+        };
+
+        // 2. APP RENDERING
+        async function renderApp() {
+            document.getElementById('auth-section').classList.add('hide');
+            document.getElementById('main-layout').classList.remove('hide');
+            document.getElementById('user-display-name').innerText = currentUser.full_name;
+            document.getElementById('user-display-role').innerText = currentUser.role;
+            
+            const nav = document.getElementById('nav-items');
+            nav.innerHTML = '';
+            
+            if(currentUser.role === 'admin') {
+                nav.innerHTML = `
+                    <button onclick="loadView('admin-overview')" class="w-full flex items-center gap-3 p-4 rounded-2xl bg-white/50 font-bold text-sm"><i data-lucide="layers"></i> Systems</button>
+                    <button onclick="loadView('admin-schools')" class="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-white/30 font-bold text-sm"><i data-lucide="school"></i> Institutions</button>
+                `;
+                loadView('admin-overview');
+            } else if(currentUser.role === 'principal') {
+                nav.innerHTML = `
+                    <button onclick="loadView('prin-overview')" class="w-full flex items-center gap-3 p-4 rounded-2xl bg-white/50 font-bold text-sm"><i data-lucide="clipboard-list"></i> Approvals</button>
+                    <button onclick="loadView('prin-staff')" class="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-white/30 font-bold text-sm"><i data-lucide="users"></i> Staff List</button>
+                `;
+                loadView('prin-overview');
+            } else {
+                nav.innerHTML = `
+                    <button onclick="loadView('teach-apply')" class="w-full flex items-center gap-3 p-4 rounded-2xl bg-white/50 font-bold text-sm"><i data-lucide="plus-circle"></i> New Leave</button>
+                    <button onclick="loadView('teach-history')" class="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-white/30 font-bold text-sm"><i data-lucide="history"></i> My History</button>
+                `;
+                loadView('teach-apply');
+            }
+            lucide.createIcons();
             setLoading(false);
         }
 
-        function renderApp(p) {
-            document.getElementById('auth-ui').classList.add('hidden');
-            document.getElementById('dashboard-ui').classList.remove('hidden');
-            document.getElementById('u-name').innerText = p.full_name;
-            document.getElementById('u-role').innerText = p.role;
-            document.getElementById('main').innerHTML = `<h1 class="text-3xl font-black">Database Connected</h1><p class="text-slate-400 mt-2">RLS issues have been resolved.</p>`;
+        // 3. VIEW CONTROLLER
+        async function loadView(view) {
+            setLoading(true);
+            const content = document.getElementById('page-content');
+            const actions = document.getElementById('header-actions');
+            actions.innerHTML = '';
+
+            if(view === 'admin-overview') {
+                const { data: schools } = await _db.from('schools').select('id', { count: 'exact' });
+                const { data: users } = await _db.from('profiles').select('id', { count: 'exact' });
+                content.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="p-8 bg-blue-600 text-white rounded-[2rem]">
+                            <p class="text-[10px] uppercase font-black opacity-60 mb-2">Total Managed Institutions</p>
+                            <h3 class="text-5xl font-black">${schools?.length || 0}</h3>
+                        </div>
+                        <div class="p-8 bg-slate-900 text-white rounded-[2rem]">
+                            <p class="text-[10px] uppercase font-black opacity-60 mb-2">Total System Users</p>
+                            <h3 class="text-5xl font-black">${users?.length || 0}</h3>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if(view === 'admin-schools') {
+                actions.innerHTML = `<button onclick="openModal('school')" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold text-xs">ADD SCHOOL</button>`;
+                const { data: schools } = await _db.from('schools').select('*');
+                content.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${schools.map(s => `<div class="p-6 bg-white/50 rounded-3xl border border-white">
+                            <h4 class="font-bold text-slate-800">${s.name}</h4>
+                            <p class="text-xs font-black text-blue-600 uppercase tracking-widest mt-1">${s.school_code}</p>
+                        </div>`).join('')}
+                    </div>
+                `;
+            }
+
+            if(view === 'teach-apply') {
+                content.innerHTML = `
+                    <form id="lvForm" class="max-w-md space-y-4">
+                        <input type="date" id="lvDate" required class="w-full p-4 bg-white/50 border rounded-2xl">
+                        <input type="number" id="lvDur" placeholder="Duration (Days)" required class="w-full p-4 bg-white/50 border rounded-2xl">
+                        <select id="lvType" class="w-full p-4 bg-white/50 border rounded-2xl">
+                            <option>Casual</option><option>Medical</option>
+                        </select>
+                        <textarea id="lvReason" placeholder="Reason" class="w-full p-4 bg-white/50 border rounded-2xl h-32"></textarea>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">Submit Application</button>
+                    </form>
+                `;
+                // Add sub-handler for leave submission
+            }
+
+            setLoading(false);
+            lucide.createIcons();
         }
 
-        function setLoading(s) { document.getElementById('loader').classList.toggle('hidden', !s); }
+        // UI HELPERS
+        function setLoading(s) { document.getElementById('loader').classList.toggle('hide', !s); }
+        function openModal(id) { 
+            document.getElementById('modal-container').classList.remove('hide');
+            document.getElementById('modal-'+id).classList.remove('hide');
+        }
+        function closeModal() { 
+            document.getElementById('modal-container').classList.add('hide'); 
+            document.querySelectorAll('#modal-container > div').forEach(d => d.classList.add('hide'));
+        }
         async function logout() { await _db.auth.signOut(); location.reload(); }
-        window.onload = () => lucide.createIcons();
+
+        window.onload = () => { lucide.createIcons(); };
     </script>
 </body>
 </html>
