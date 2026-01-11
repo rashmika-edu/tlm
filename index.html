@@ -3,262 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LankaTeacher Pro | Unified Portal</title>
+    <title>Master Admin | Optimized</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        
-        :root { --glass: rgba(255, 255, 255, 0.6); --glass-border: rgba(255, 255, 255, 0.4); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
         
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: #f1f5f9;
+            /* Optimized CSS Gradient - No external assets to load */
+            background: #f8fafc;
             background-image: radial-gradient(at 0% 0%, hsla(210,100%,93%,1) 0, transparent 50%), 
-                              radial-gradient(at 100% 100%, hsla(220,100%,90%,1) 0, transparent 50%);
-            min-height: 100vh;
+                              radial-gradient(at 50% 0%, hsla(225,100%,90%,1) 0, transparent 50%), 
+                              radial-gradient(at 100% 0%, hsla(210,100%,93%,1) 0, transparent 50%);
+            height: 100vh;
+            overflow: hidden;
         }
 
-        .glass { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); }
-        .tab-active { background: #0f172a; color: white !important; }
-        .hide { display: none !important; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
 
-        /* Animation for smooth transitions */
-        .fade-in { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .active-tab {
+            background: white;
+            color: #2563eb !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* Faster loading skeleton effect */
+        .loading-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center p-4">
+<body class="flex flex-col md:flex-row p-0 md:p-6 gap-6">
 
-    <div id="loader" class="hidden fixed inset-0 z-[100] bg-white/60 backdrop-blur-md flex flex-col items-center justify-center">
-        <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p class="mt-4 text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">Secure Sync</p>
+    <div id="loader" class="fixed inset-0 z-[100] bg-white/40 backdrop-blur-md flex items-center justify-center transition-opacity duration-300">
+        <div class="flex flex-col items-center">
+            <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <p class="mt-4 text-xs font-bold text-blue-600 tracking-widest uppercase">Fast Sync...</p>
+        </div>
     </div>
 
-    <section id="auth-section" class="w-full max-w-[450px] fade-in">
-        <div class="text-center mb-10">
-            <h1 class="text-3xl font-black text-slate-900 tracking-tighter">LankaTeacher <span class="text-blue-600">Pro</span></h1>
-            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Management OS v2.1</p>
+    <nav class="glass-panel w-full md:w-72 rounded-none md:rounded-[2.5rem] flex flex-row md:flex-col p-4 md:p-8 z-50">
+        <div class="hidden md:flex items-center gap-3 mb-10">
+            <div class="bg-blue-600 p-2 rounded-xl text-white"><i data-lucide="zap"></i></div>
+            <h1 class="font-bold text-xl tracking-tight">Admin OS</h1>
         </div>
 
-        <div class="glass rounded-[2.5rem] p-8 shadow-2xl shadow-blue-500/5">
-            <div class="flex bg-slate-200/50 p-1.5 rounded-2xl mb-8">
-                <button onclick="setRole('teacher')" id="tab-teacher" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-wider tab-active transition-all">Teacher</button>
-                <button onclick="setRole('principal')" id="tab-principal" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-wider text-slate-500 transition-all">Principal</button>
-                <button onclick="setRole('admin')" id="tab-admin" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-wider text-slate-500 transition-all">Admin</button>
-            </div>
-
-            <form id="loginForm" class="space-y-4">
-                <input type="email" id="email" placeholder="Email Address" required class="w-full p-4 bg-white/50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 transition-all">
-                <input type="password" id="password" placeholder="Password" required class="w-full p-4 bg-white/50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 transition-all">
-                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-slate-800 transition-all">Enter Portal</button>
-            </form>
-
-            <div id="reg-link" class="mt-6 text-center">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter">New Staff? 
-                    <button onclick="openModal('reg')" class="text-blue-600 hover:underline">Create Account</button>
-                </p>
-            </div>
-        </div>
-        <p class="text-center mt-10 text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Developed by K.A.V.Rashmika</p>
-    </section>
-
-    <div id="main-layout" class="hide fixed inset-0 flex flex-col md:flex-row p-4 md:p-6 gap-6">
-        
-        <nav class="glass w-full md:w-80 rounded-[2.5rem] p-8 flex flex-col">
-            <div class="flex items-center gap-3 mb-10">
-                <div id="role-icon" class="bg-blue-600 p-2 rounded-xl text-white"><i data-lucide="user"></i></div>
-                <div>
-                    <h2 id="user-display-name" class="font-bold text-slate-800 leading-none">Name</h2>
-                    <span id="user-display-role" class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Role</span>
-                </div>
-            </div>
-
-            <div id="nav-items" class="flex-1 space-y-2">
-                </div>
-
-            <button onclick="logout()" class="mt-auto flex items-center justify-center gap-3 p-4 bg-rose-500/10 text-rose-600 rounded-2xl font-bold hover:bg-rose-500 hover:text-white transition-all">
-                <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+        <div class="flex flex-1 md:flex-col gap-2">
+            <button onclick="switchTab('overview')" id="btn-overview" class="tab-link flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 p-3 md:p-4 rounded-2xl text-slate-500 active-tab">
+                <i data-lucide="layout-grid" class="w-5 h-5"></i><span class="hidden md:inline font-bold">Hub</span>
             </button>
-        </nav>
-
-        <main class="flex-1 glass rounded-[2.5rem] overflow-hidden flex flex-col fade-in">
-            <header class="p-8 border-b border-white/40 flex justify-between items-center bg-white/20">
-                <h2 id="page-title" class="text-2xl font-black text-slate-800 uppercase tracking-tighter">Overview</h2>
-                <div id="header-actions"></div>
-            </header>
-            <div id="page-content" class="flex-1 overflow-y-auto p-8">
-                </div>
-        </main>
-    </div>
-
-    <div id="modal-container" class="hide fixed inset-0 z-[200] bg-slate-900/20 backdrop-blur-sm flex items-center justify-center p-4">
-        <div id="modal-reg" class="hide glass bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
-            <h3 class="text-2xl font-black mb-6">Teacher Registration</h3>
-            <form id="regForm" class="space-y-4">
-                <input type="text" id="regName" placeholder="Legal Full Name" required class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
-                <input type="email" id="regEmail" placeholder="Email" required class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
-                <input type="password" id="regPass" placeholder="Password" required class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
-                <input type="text" id="regCode" placeholder="School Access Code" required class="w-full p-4 bg-blue-50 border-blue-100 rounded-2xl outline-none">
-                <div class="flex gap-4 pt-4">
-                    <button type="button" onclick="closeModal()" class="flex-1 font-bold text-slate-400">Cancel</button>
-                    <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg">Sign Up</button>
-                </div>
-            </form>
+            <button onclick="switchTab('schools')" id="btn-schools" class="tab-link flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 p-3 md:p-4 rounded-2xl text-slate-500">
+                <i data-lucide="school" class="w-5 h-5"></i><span class="hidden md:inline font-bold">Schools</span>
+            </button>
+            <button onclick="switchTab('users')" id="btn-users" class="tab-link flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 p-3 md:p-4 rounded-2xl text-slate-500">
+                <i data-lucide="users" class="w-5 h-5"></i><span class="hidden md:inline font-bold">Staff</span>
+            </button>
         </div>
 
-        <div id="modal-school" class="hide glass bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
-            <h3 class="text-2xl font-black mb-6">New Institution</h3>
+        <button onclick="logout()" class="hidden md:flex mt-auto items-center justify-center gap-2 p-4 bg-slate-900 text-white rounded-2xl font-bold">
+            <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+        </button>
+    </nav>
+
+    <main class="flex-1 glass-panel rounded-none md:rounded-[2.5rem] overflow-hidden flex flex-col">
+        <header class="p-6 md:p-8 flex justify-between items-center border-b border-white/40 bg-white/20">
+            <div>
+                <h2 id="view-title" class="text-2xl font-black text-slate-800">System Hub</h2>
+                <p id="view-subtitle" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Global Analytics</p>
+            </div>
+            <button onclick="openModal('school')" class="bg-blue-600 text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-blue-500/20">
+                Add Institution
+            </button>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6 md:p-8" id="scroll-area">
+            
+            <div id="tab-overview" class="tab-view space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white/50 p-6 rounded-3xl border border-white">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Institutions</p>
+                        <h3 class="text-4xl font-black text-slate-800" id="stat-schools">--</h3>
+                    </div>
+                    <div class="bg-white/50 p-6 rounded-3xl border border-white">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Total Users</p>
+                        <h3 class="text-4xl font-black text-slate-800" id="stat-users">--</h3>
+                    </div>
+                    <div class="bg-blue-600 p-6 rounded-3xl text-white shadow-xl shadow-blue-500/20">
+                        <p class="text-[10px] font-bold opacity-80 uppercase">Active Leaves</p>
+                        <h3 class="text-4xl font-black" id="stat-leaves">--</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white/40 rounded-[2rem] p-6 border border-white">
+                    <h4 class="text-xs font-bold text-slate-500 mb-4 uppercase">Recent Activity</h4>
+                    <div id="activity-feed" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <div id="tab-schools" class="tab-view hidden grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+            <div id="tab-users" class="tab-view hidden space-y-3"></div>
+
+        </div>
+    </main>
+
+    <div id="modal-school" class="hidden fixed inset-0 z-[100] bg-slate-900/20 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl">
+            <h3 class="text-xl font-bold mb-6">New School</h3>
             <form id="schoolForm" class="space-y-4">
-                <input type="text" id="schName" placeholder="School Name" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
-                <input type="text" id="schCode" placeholder="School Code" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
-                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold">Register School</button>
+                <input type="text" id="schName" placeholder="Name" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none border border-slate-100">
+                <input type="text" id="schCode" placeholder="Code (e.g. SC-101)" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none border border-slate-100">
+                <div class="flex gap-4 pt-2">
+                    <button type="button" onclick="closeModal()" class="flex-1 font-bold text-slate-400">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold">Create</button>
+                </div>
             </form>
         </div>
     </div>
 
     <script>
-        // CONFIG
         const SB_URL = "https://wlzzepbqdeotluxkrthd.supabase.co"; 
         const SB_KEY = "sb_publishable_61_5jXI4eiFLGbS6MXLPRA_lNFgmCbt"; 
         const _db = supabase.createClient(SB_URL, SB_KEY);
 
-        let currentUser = null;
-        let activeRole = 'teacher';
+        let cache = { schools: [], users: [], leaves: [] };
 
-        // 1. AUTH LOGIC
-        function setRole(role) {
-            activeRole = role;
-            document.querySelectorAll('#auth-section button').forEach(b => b.classList.remove('tab-active'));
-            document.getElementById('tab-'+role).classList.add('tab-active');
-            document.getElementById('reg-link').classList.toggle('hide', role !== 'teacher');
+        // Optimized Data Fetcher (Parallel Requests)
+        async function loadData() {
+            setLoading(true);
+            try {
+                const [schoolsRes, profilesRes, leavesRes] = await Promise.all([
+                    _db.from('schools').select('id, name, school_code'),
+                    _db.from('profiles').select('id, full_name, role, school_code'),
+                    _db.from('leaves').select('id, status', { count: 'exact' }).eq('status', 'Pending')
+                ]);
+
+                cache.schools = schoolsRes.data || [];
+                cache.users = profilesRes.data || [];
+                cache.leaves = leavesRes.data || [];
+
+                renderAll();
+            } catch (e) {
+                console.error("Fetch Error:", e);
+            } finally {
+                setLoading(false);
+            }
         }
 
-        document.getElementById('loginForm').onsubmit = async (e) => {
+        function renderAll() {
+            // Stats
+            document.getElementById('stat-schools').innerText = cache.schools.length;
+            document.getElementById('stat-users').innerText = cache.users.length;
+            document.getElementById('stat-leaves').innerText = cache.leaves.length;
+
+            // Activity (Top 5 Users)
+            document.getElementById('activity-feed').innerHTML = cache.users.slice(0, 5).map(u => `
+                <div class="flex items-center justify-between p-3 bg-white/50 rounded-xl border border-white/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">${u.full_name[0]}</div>
+                        <p class="text-xs font-bold text-slate-700">${u.full_name}</p>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase">${u.school_code}</span>
+                </div>
+            `).join('');
+
+            // Schools Grid
+            document.getElementById('tab-schools').innerHTML = cache.schools.map(s => `
+                <div class="bg-white/50 p-6 rounded-3xl border border-white">
+                    <h5 class="font-bold text-slate-800">${s.name}</h5>
+                    <p class="text-[10px] font-bold text-blue-500 mt-1">${s.school_code}</p>
+                </div>
+            `).join('');
+
+            // Users List
+            document.getElementById('tab-users').innerHTML = cache.users.map(u => `
+                <div class="bg-white/50 p-4 rounded-2xl flex justify-between items-center border border-white">
+                    <div><p class="text-sm font-bold text-slate-800">${u.full_name}</p><p class="text-[10px] text-slate-400 font-bold uppercase">${u.role}</p></div>
+                    <div class="text-right"><p class="text-[10px] font-bold text-slate-800">${u.school_code}</p></div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function switchTab(t) {
+            document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active-tab'));
+            document.getElementById('tab-'+t).classList.remove('hidden');
+            document.getElementById('btn-'+t).classList.add('active-tab');
+            document.getElementById('view-title').innerText = t.charAt(0).toUpperCase() + t.slice(1);
+        }
+
+        function setLoading(s) { 
+            const l = document.getElementById('loader');
+            if(s) l.classList.remove('hidden'); else l.classList.add('hidden');
+        }
+
+        function openModal(id) { document.getElementById('modal-'+id).classList.remove('hidden'); }
+        function closeModal() { document.getElementById('modal-school').classList.add('hidden'); }
+
+        document.getElementById('schoolForm').onsubmit = async (e) => {
             e.preventDefault();
             setLoading(true);
-            const { data, error } = await _db.auth.signInWithPassword({
-                email: e.target.email.value,
-                password: e.target.password.value
-            });
-
-            if(error) { alert(error.message); setLoading(false); return; }
-
-            const { data: profile } = await _db.from('profiles').select('*').eq('id', data.user.id).single();
-            
-            if(!profile || profile.role !== activeRole) {
-                alert(`Access denied. This account is registered as: ${profile ? profile.role : 'unknown'}`);
-                await _db.auth.signOut();
-                setLoading(false);
-            } else {
-                currentUser = profile;
-                renderApp();
-            }
+            await _db.from('schools').insert([{ name: document.getElementById('schName').value, school_code: document.getElementById('schCode').value }]);
+            closeModal();
+            loadData();
         };
 
-        // 2. APP RENDERING
-        async function renderApp() {
-            document.getElementById('auth-section').classList.add('hide');
-            document.getElementById('main-layout').classList.remove('hide');
-            document.getElementById('user-display-name').innerText = currentUser.full_name;
-            document.getElementById('user-display-role').innerText = currentUser.role;
-            
-            const nav = document.getElementById('nav-items');
-            nav.innerHTML = '';
-            
-            if(currentUser.role === 'admin') {
-                nav.innerHTML = `
-                    <button onclick="loadView('admin-overview')" class="w-full flex items-center gap-3 p-4 rounded-2xl bg-white/50 font-bold text-sm"><i data-lucide="layers"></i> Systems</button>
-                    <button onclick="loadView('admin-schools')" class="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-white/30 font-bold text-sm"><i data-lucide="school"></i> Institutions</button>
-                `;
-                loadView('admin-overview');
-            } else if(currentUser.role === 'principal') {
-                nav.innerHTML = `
-                    <button onclick="loadView('prin-overview')" class="w-full flex items-center gap-3 p-4 rounded-2xl bg-white/50 font-bold text-sm"><i data-lucide="clipboard-list"></i> Approvals</button>
-                    <button onclick="loadView('prin-staff')" class="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-white/30 font-bold text-sm"><i data-lucide="users"></i> Staff List</button>
-                `;
-                loadView('prin-overview');
-            } else {
-                nav.innerHTML = `
-                    <button onclick="loadView('teach-apply')" class="w-full flex items-center gap-3 p-4 rounded-2xl bg-white/50 font-bold text-sm"><i data-lucide="plus-circle"></i> New Leave</button>
-                    <button onclick="loadView('teach-history')" class="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-white/30 font-bold text-sm"><i data-lucide="history"></i> My History</button>
-                `;
-                loadView('teach-apply');
-            }
-            lucide.createIcons();
-            setLoading(false);
-        }
-
-        // 3. VIEW CONTROLLER
-        async function loadView(view) {
-            setLoading(true);
-            const content = document.getElementById('page-content');
-            const actions = document.getElementById('header-actions');
-            actions.innerHTML = '';
-
-            if(view === 'admin-overview') {
-                const { data: schools } = await _db.from('schools').select('id', { count: 'exact' });
-                const { data: users } = await _db.from('profiles').select('id', { count: 'exact' });
-                content.innerHTML = `
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="p-8 bg-blue-600 text-white rounded-[2rem]">
-                            <p class="text-[10px] uppercase font-black opacity-60 mb-2">Total Managed Institutions</p>
-                            <h3 class="text-5xl font-black">${schools?.length || 0}</h3>
-                        </div>
-                        <div class="p-8 bg-slate-900 text-white rounded-[2rem]">
-                            <p class="text-[10px] uppercase font-black opacity-60 mb-2">Total System Users</p>
-                            <h3 class="text-5xl font-black">${users?.length || 0}</h3>
-                        </div>
-                    </div>
-                `;
-            }
-
-            if(view === 'admin-schools') {
-                actions.innerHTML = `<button onclick="openModal('school')" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold text-xs">ADD SCHOOL</button>`;
-                const { data: schools } = await _db.from('schools').select('*');
-                content.innerHTML = `
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        ${schools.map(s => `<div class="p-6 bg-white/50 rounded-3xl border border-white">
-                            <h4 class="font-bold text-slate-800">${s.name}</h4>
-                            <p class="text-xs font-black text-blue-600 uppercase tracking-widest mt-1">${s.school_code}</p>
-                        </div>`).join('')}
-                    </div>
-                `;
-            }
-
-            if(view === 'teach-apply') {
-                content.innerHTML = `
-                    <form id="lvForm" class="max-w-md space-y-4">
-                        <input type="date" id="lvDate" required class="w-full p-4 bg-white/50 border rounded-2xl">
-                        <input type="number" id="lvDur" placeholder="Duration (Days)" required class="w-full p-4 bg-white/50 border rounded-2xl">
-                        <select id="lvType" class="w-full p-4 bg-white/50 border rounded-2xl">
-                            <option>Casual</option><option>Medical</option>
-                        </select>
-                        <textarea id="lvReason" placeholder="Reason" class="w-full p-4 bg-white/50 border rounded-2xl h-32"></textarea>
-                        <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold">Submit Application</button>
-                    </form>
-                `;
-                // Add sub-handler for leave submission
-            }
-
-            setLoading(false);
-            lucide.createIcons();
-        }
-
-        // UI HELPERS
-        function setLoading(s) { document.getElementById('loader').classList.toggle('hide', !s); }
-        function openModal(id) { 
-            document.getElementById('modal-container').classList.remove('hide');
-            document.getElementById('modal-'+id).classList.remove('hide');
-        }
-        function closeModal() { 
-            document.getElementById('modal-container').classList.add('hide'); 
-            document.querySelectorAll('#modal-container > div').forEach(d => d.classList.add('hide'));
-        }
-        async function logout() { await _db.auth.signOut(); location.reload(); }
-
-        window.onload = () => { lucide.createIcons(); };
+        window.onload = () => { loadData(); lucide.createIcons(); };
     </script>
 </body>
 </html>
