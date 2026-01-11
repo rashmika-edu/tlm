@@ -3,99 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LankaTeacher Pro | Unified Management</title>
+    <title>LankaTeacher Pro | Cloud Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; }
-        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
-        .tab-active { background: #0f172a; color: white !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid white; }
+        .tab-active { background: #0f172a; color: white !important; transform: translateY(-2px); }
         .hidden { display: none !important; }
-        .fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
-    <div id="loader" class="hidden fixed inset-0 z-[200] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center">
+    <div id="loader" class="hidden fixed inset-0 z-[1000] bg-white/90 flex flex-col items-center justify-center">
         <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p class="mt-4 font-black text-blue-600 tracking-widest text-[10px]">VERIFYING CREDENTIALS</p>
+        <p class="mt-4 font-bold text-blue-600 tracking-widest text-xs">SYNCHRONIZING...</p>
     </div>
 
-    <section id="auth-ui" class="w-full max-w-[420px] fade-in">
-        <div class="text-center mb-10">
-            <h1 class="text-4xl font-black text-slate-900 tracking-tighter italic">LankaTeacher<span class="text-blue-600">Pro</span></h1>
-            <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Institution OS v2.1</p>
+    <section id="auth-ui" class="w-full max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black text-slate-900 italic">LankaTeacher<span class="text-blue-600">Pro</span></h1>
+            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-2">Management OS V2.1</p>
         </div>
 
         <div class="glass p-8 rounded-[2.5rem] shadow-2xl">
-            <div class="flex bg-slate-200/50 p-1.5 rounded-2xl mb-8">
-                <button onclick="setRole('teacher')" id="tab-teacher" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tab-active transition-all">Teacher</button>
-                <button onclick="setRole('principal')" id="tab-principal" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase text-slate-500 transition-all">Principal</button>
-                <button onclick="setRole('admin')" id="tab-admin" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase text-slate-500 transition-all">Admin</button>
+            <div class="flex bg-slate-100 p-1 rounded-2xl mb-6">
+                <button onclick="setRole('teacher')" id="t-teacher" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tab-active transition-all">Teacher</button>
+                <button onclick="setRole('principal')" id="t-principal" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase text-slate-500 transition-all">Principal</button>
+                <button onclick="setRole('admin')" id="t-admin" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase text-slate-500 transition-all">Admin</button>
             </div>
 
             <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
-                <div class="space-y-4">
-                    <input type="email" id="email" placeholder="Email Address" required class="w-full p-4 bg-white/50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 transition-all">
-                    <input type="password" id="password" placeholder="Password" required class="w-full p-4 bg-white/50 border border-slate-200 rounded-2xl outline-none focus:border-blue-500 transition-all">
-                </div>
-                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-slate-800 active:scale-95 transition-all mt-2">
-                    Enter Portal
-                </button>
+                <input type="email" id="email" placeholder="Email" required class="w-full p-4 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-2 ring-blue-500/20">
+                <input type="password" id="password" placeholder="Password" required class="w-full p-4 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-2 ring-blue-500/20">
+                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-slate-800 transition-all">Login to Portal</button>
             </form>
 
-            <div id="reg-trigger" class="mt-8 text-center">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter">New Teacher? 
-                    <button onclick="toggleModal('reg', true)" class="text-blue-600 hover:underline">Register Account</button>
-                </p>
+            <div id="reg-area" class="mt-6 text-center">
+                <p class="text-xs font-bold text-slate-400">New Teacher? <button onclick="toggleModal('reg', true)" class="text-blue-600 underline">Register</button></p>
             </div>
         </div>
-        <p class="text-center mt-10 text-[9px] font-bold text-slate-400 uppercase tracking-widest">© 2026 Developed by K.A.V.Rashmika</p>
     </section>
 
-    <div id="dashboard-ui" class="hidden fixed inset-0 flex flex-col md:flex-row p-4 md:p-6 gap-6 fade-in">
-        <aside class="glass w-full md:w-80 rounded-[2.5rem] p-8 flex flex-col shadow-xl">
-            <div class="flex items-center gap-4 mb-10">
-                <div class="bg-blue-600 p-3 rounded-2xl text-white shadow-lg shadow-blue-600/20"><i data-lucide="layout-grid"></i></div>
-                <div>
-                    <h2 id="display-name" class="font-bold text-slate-800 leading-tight">User</h2>
-                    <span id="display-role" class="text-[9px] font-black text-blue-600 uppercase tracking-[0.2em]">Role</span>
-                </div>
+    <div id="dashboard-ui" class="hidden fixed inset-0 flex flex-col md:flex-row p-4 md:p-8 bg-slate-50 gap-6">
+        <aside class="glass w-full md:w-72 rounded-[2rem] p-8 flex flex-col shadow-xl">
+            <div class="flex items-center gap-3 mb-10">
+                <div class="bg-blue-600 p-2 rounded-lg text-white"><i data-lucide="layout-dashboard"></i></div>
+                <h2 class="font-extrabold text-slate-800">Hub</h2>
             </div>
-
-            <nav id="sidebar-nav" class="flex-1 space-y-2">
-                </nav>
-
-            <button onclick="logout()" class="mt-auto p-4 bg-rose-50 text-rose-600 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-rose-600 hover:text-white transition-all">
-                <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+            <nav id="nav-list" class="flex-1 space-y-2"></nav>
+            <button onclick="logout()" class="p-4 bg-rose-50 text-rose-600 rounded-2xl font-bold text-sm flex items-center justify-center gap-2">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Logout
             </button>
         </aside>
-
-        <main class="flex-1 glass rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col">
-            <header class="p-8 border-b border-white flex justify-between items-center">
-                <h2 id="view-title" class="text-2xl font-black text-slate-800 tracking-tighter uppercase">Overview</h2>
-                <div id="header-actions"></div>
+        <main class="flex-1 glass rounded-[2rem] shadow-xl overflow-hidden flex flex-col">
+            <header class="p-8 border-b flex justify-between items-center">
+                <h1 id="view-title" class="text-xl font-black text-slate-800 uppercase tracking-tighter">Overview</h1>
+                <div class="px-4 py-2 bg-slate-100 rounded-full text-[10px] font-bold text-slate-500" id="user-pill"></div>
             </header>
-            <div id="view-content" class="flex-1 overflow-y-auto p-8">
-                </div>
+            <div id="view-content" class="p-8 overflow-y-auto flex-1"></div>
         </main>
     </div>
 
-    <div id="modal-reg" class="hidden fixed inset-0 z-[300] bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl">
-            <h3 class="text-2xl font-black text-slate-800 mb-2">Teacher Join</h3>
-            <p class="text-slate-500 text-sm mb-8">Register your institutional profile.</p>
-            
+    <div id="modal-reg" class="hidden fixed inset-0 z-[2000] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
+            <h3 class="text-2xl font-black text-slate-800 mb-6">Staff Registration</h3>
             <form onsubmit="handleRegistration(event)" class="space-y-4">
-                <input type="text" id="regName" placeholder="Full Name" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-blue-500">
-                <input type="email" id="regEmail" placeholder="Email Address" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-blue-500">
-                <input type="password" id="regPass" placeholder="Password" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-blue-500">
-                <input type="text" id="regCode" placeholder="School Code (e.g. ADMIN-HQ)" required class="w-full p-4 bg-blue-50 border-blue-100 text-blue-800 rounded-2xl outline-none font-bold">
-                
-                <div class="flex gap-4 pt-6">
+                <input type="text" id="r-name" placeholder="Full Name" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
+                <input type="email" id="r-email" placeholder="Email" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
+                <input type="password" id="r-pass" placeholder="Password" required class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
+                <input type="text" id="r-code" placeholder="School Code (e.g. ADMIN-HQ)" required class="w-full p-4 bg-blue-50 text-blue-700 font-bold rounded-2xl outline-none">
+                <div class="flex gap-4 pt-4">
                     <button type="button" onclick="toggleModal('reg', false)" class="flex-1 font-bold text-slate-400">Cancel</button>
                     <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg">Register</button>
                 </div>
@@ -104,20 +84,19 @@
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        const SB_URL = "https://wlzzepbqdeotluxkrthd.supabase.co"; 
-        const SB_KEY = "sb_publishable_61_5jXI4eiFLGbS6MXLPRA_lNFgmCbt"; 
+        // REPLACE THESE WITH YOUR ACTUAL KEYS
+        const SB_URL = "https://wlzzepbqdeotluxkrthd.supabase.co";
+        const SB_KEY = "sb_publishable_61_5jXI4eiFLGbS6MXLPRA_lNFgmCbt";
         const _db = supabase.createClient(SB_URL, SB_KEY);
 
         let activeRole = 'teacher';
         let userProfile = null;
 
-        // --- AUTH & PROFILE LOGIC ---
-        function setRole(role) {
-            activeRole = role;
-            document.querySelectorAll('#auth-ui button[id^="tab-"]').forEach(btn => btn.classList.remove('tab-active', 'text-slate-500'));
-            document.getElementById('tab-'+role).classList.add('tab-active');
-            document.getElementById('reg-trigger').classList.toggle('hidden', role !== 'teacher');
+        function setRole(r) {
+            activeRole = r;
+            document.querySelectorAll('button[id^="t-"]').forEach(b => b.classList.remove('tab-active', 'text-slate-500'));
+            document.getElementById('t-'+r).classList.add('tab-active');
+            document.getElementById('reg-area').classList.toggle('hidden', r !== 'teacher');
         }
 
         async function handleLogin(e) {
@@ -129,33 +108,34 @@
                 password: e.target.password.value
             });
 
-            if(aErr) { alert("Login Error: " + aErr.message); setLoading(false); return; }
+            if(aErr) { alert("Auth Error: " + aErr.message); setLoading(false); return; }
 
             // 1. Fetch Profile
-            let { data: profile, error: pErr } = await _db.from('profiles').select('*').eq('id', auth.user.id).single();
+            let { data: profile, error: pErr } = await _db.from('profiles')
+                .select('*').eq('id', auth.user.id).single();
             
-            // 2. SELF-HEALING: If account exists in Auth but not in Profiles
+            // 2. SELF-HEALING: If no profile exists, create it instantly
             if(!profile) {
-                console.log("Auto-creating missing profile for " + activeRole);
+                console.log("No profile record. Creating now...");
                 const { data: newP, error: cErr } = await _db.from('profiles').insert([{
                     id: auth.user.id,
                     full_name: auth.user.email.split('@')[0],
                     role: activeRole,
                     school_code: 'ADMIN-HQ'
                 }]).select().single();
-                
-                if(cErr) { 
-                    alert("Database Error: Could not create profile. Check SQL RLS Policies."); 
+
+                if(cErr) {
+                    alert("Database Link Error: " + cErr.message + ". Check RLS Policies.");
                     await _db.auth.signOut();
                     setLoading(false);
-                    return; 
+                    return;
                 }
                 profile = newP;
             }
 
-            // 3. Role Enforcement
+            // 3. Check Role Mismatch
             if(profile.role !== activeRole) {
-                alert(`Role Mismatch: This portal is for ${activeRole}s. Your account is ${profile.role}.`);
+                alert(`Access Denied. You are registered as ${profile.role}, not ${activeRole}.`);
                 await _db.auth.signOut();
                 setLoading(false);
             } else {
@@ -167,89 +147,53 @@
         async function handleRegistration(e) {
             e.preventDefault();
             setLoading(true);
-
-            // Create Auth
             const { data: auth, error: aErr } = await _db.auth.signUp({
-                email: e.target.regEmail.value,
-                password: e.target.regPass.value
+                email: e.target['r-email'].value,
+                password: e.target['r-pass'].value
             });
 
             if(aErr) { alert(aErr.message); setLoading(false); return; }
 
-            // Create Profile (Teacher Registration)
             const { error: pErr } = await _db.from('profiles').insert([{
                 id: auth.user.id,
-                full_name: e.target.regName.value,
+                full_name: e.target['r-name'].value,
                 role: 'teacher',
-                school_code: e.target.regCode.value
+                school_code: e.target['r-code'].value
             }]);
 
-            if(pErr) {
-                alert("Database Error: Profile creation failed. Check School Code.");
-            } else {
-                alert("Registration Complete! Please log in.");
-                toggleModal('reg', false);
-            }
+            if(pErr) alert("Auth created, but profile failed. Please contact Admin.");
+            else { alert("Registration Success! Please login."); toggleModal('reg', false); }
             setLoading(false);
         }
 
-        // --- DASHBOARD RENDERING ---
         function renderApp() {
-            setLoading(true);
             document.getElementById('auth-ui').classList.add('hidden');
             document.getElementById('dashboard-ui').classList.remove('hidden');
-            document.getElementById('display-name').innerText = userProfile.full_name;
-            document.getElementById('display-role').innerText = userProfile.role;
+            document.getElementById('user-pill').innerText = `${userProfile.full_name} | ${userProfile.role.toUpperCase()}`;
             
-            const nav = document.getElementById('sidebar-nav');
+            const nav = document.getElementById('nav-list');
             nav.innerHTML = '';
-
-            const roles = {
-                admin: [
-                    { label: 'Schools', icon: 'school', view: 'admin-schools' },
-                    { label: 'System Logs', icon: 'activity', view: 'admin-logs' }
-                ],
-                principal: [
-                    { label: 'Teacher Leaves', icon: 'clipboard-list', view: 'prin-leaves' },
-                    { label: 'Staff Directory', icon: 'users', view: 'prin-staff' }
-                ],
-                teacher: [
-                    { label: 'My Leaves', icon: 'send', view: 'teach-apply' },
-                    { label: 'History', icon: 'clock', view: 'teach-history' }
-                ]
+            
+            const config = {
+                admin: [{l:'Schools', i:'school', v:'admin-schools'}],
+                principal: [{l:'Leaves', i:'check-square', v:'prin-leaves'}],
+                teacher: [{l:'Apply', i:'plus', v:'teach-apply'}]
             };
 
-            roles[userProfile.role].forEach(item => {
-                const btn = document.createElement('button');
-                btn.className = "w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-white/50 font-bold text-sm text-slate-600 transition-all";
-                btn.innerHTML = `<i data-lucide="${item.icon}" class="w-4 h-4"></i> ${item.label}`;
-                btn.onclick = () => loadView(item.view);
-                nav.appendChild(btn);
+            config[userProfile.role].forEach(m => {
+                const b = document.createElement('button');
+                b.className = "w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white font-bold text-sm text-slate-600 transition-all";
+                b.innerHTML = `<i data-lucide="${m.i}" class="w-4 h-4"></i> ${m.l}`;
+                nav.appendChild(b);
             });
-
-            loadView(roles[userProfile.role][0].view);
+            
+            document.getElementById('view-content').innerHTML = `<h3 class="text-3xl font-bold">Welcome Back</h3><p class="text-slate-400 mt-2">The system is fully operational.</p>`;
             lucide.createIcons();
             setLoading(false);
         }
 
-        function loadView(view) {
-            const content = document.getElementById('view-content');
-            const title = document.getElementById('view-title');
-            title.innerText = view.replace('-', ' ');
-            
-            content.innerHTML = `
-                <div class="p-10 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center text-slate-400">
-                    <i data-lucide="construction" class="w-10 h-10 mb-4"></i>
-                    <p class="font-bold uppercase tracking-widest text-[10px]">Interface Ready</p>
-                    <p class="text-xs mt-2 text-slate-400">Loading data for ${view}...</p>
-                </div>
-            `;
-            lucide.createIcons();
-        }
-
-        // --- HELPERS ---
         function setLoading(s) { document.getElementById('loader').classList.toggle('hidden', !s); }
-        function toggleModal(id, show) { document.getElementById('modal-'+id).classList.toggle('hidden', !show); }
+        function toggleModal(id, s) { document.getElementById('modal-'+id).classList.toggle('hidden', !s); }
         async function logout() { await _db.auth.signOut(); location.reload(); }
         window.onload = () => lucide.createIcons();
     </script>
